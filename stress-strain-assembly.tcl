@@ -213,7 +213,15 @@ proc resetAngles {} {
 ###############################################################################
 
 proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer gamma gammaErr tau tauErr write } {
-    global runtime chartTau_gamma chartGamma_T chartTau_T chartT_t w
+    global runtime chartTau_gamma chartGamma_T chartTau_T chartT_t w lastDisplayTime
+
+	set tm [clock milliseconds]
+	if { [info exists lastDisplayTime] } {
+		if { $tm - $lastDisplayTime < 500 } {
+			return
+		}
+	}
+	set lastDisplayTime $tm
     
     # \u0412\u044B\u0432\u043E\u0434\u0438\u043C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0432 \u043E\u043A\u043D\u043E \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
 	set runtime(phi1) [::measure::format::valueWithErr -noScale -- $phi1 $phi1Err ""]

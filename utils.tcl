@@ -131,11 +131,8 @@ proc rad2grad { v } {
 	return [expr $v * 57.2957795130823]
 }
 
-#!!!
-set ccc 0
 proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer { write 0 } } {
-#!!!
-	global settings ccc
+	global settings
 
 	# рассчитываем деформацию
 	lassign [calcGamma $phi1 $phi1Err $phi2 $phi2Err] gamma gammaErr
@@ -163,10 +160,7 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer { write 0 } } {
     	puts "φ1=$phi1v\tφ2=$phi2v\tγ=$gammav\tτ=$tauv\tT=$tv"
 	} else {
 	    # Выводим результаты в окно программы
-		incr ccc
-		if { $ccc % 10 == 0 } {
-        	measure::interop::sync-cmd [list display $phi1 $phi1Err $phi2 $phi2Err $temp $tempErr $tempDer $gamma $gammaErr $tau $tauErr $write]
-		}
+      	measure::interop::cmd [list display $phi1 $phi1Err $phi2 $phi2Err $temp $tempErr $tempDer $gamma $gammaErr $tau $tauErr $write]
 	}
 }
 

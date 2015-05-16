@@ -150,7 +150,7 @@ proc quit {} {
 	::measure::interop::waitForWorkerThreads
 
     # останавливаем поток записи данных
-    # ::measure::datafile::shutdown
+    ::measure::datafile::shutdown
      
     # останавливаем поток протоколирования
 	::measure::logger::shutdown
@@ -247,7 +247,7 @@ set log [measure::logger::init measure]
 ::measure::logger::server
 
 # запускаем выделенный поток записи данных
-# ::measure::datafile::startup
+::measure::datafile::startup
 
 # Создаём окно программы
 set w ""

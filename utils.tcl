@@ -131,8 +131,11 @@ proc rad2grad { v } {
 	return [expr $v * 57.2957795130823]
 }
 
+#!!!
+set ccc 0
 proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer { write 0 } } {
-	global settings
+#!!!
+	global settings ccc
 
 	# рассчитываем деформацию
 	lassign [calcGamma $phi1 $phi1Err $phi2 $phi2Err] gamma gammaErr
@@ -160,7 +163,10 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer { write 0 } } {
     	puts "φ1=$phi1v\tφ2=$phi2v\tγ=$gammav\tτ=$tauv\tT=$tv"
 	} else {
 	    # Выводим результаты в окно программы
-        measure::interop::sync-cmd [list display $phi1 $phi1Err $phi2 $phi2Err $temp $tempErr $tempDer $gamma $gammaErr $tau $tauErr $write]
+		incr ccc
+		if { $ccc % 10 == 0 } {
+        	measure::interop::sync-cmd [list display $phi1 $phi1Err $phi2 $phi2Err $temp $tempErr $tempDer $gamma $gammaErr $tau $tauErr $write]
+		}
 	}
 }
 
@@ -219,7 +225,7 @@ proc writeDataPoint { fn temp tempErr tempDer phi1 phi1Err phi2 phi2Err gamma ga
     }
     
 	measure::datafile::write $fn [list \
-        TIMESTAMP \
+        [measure::datafile::makeDateTime] \
 		[format %0.3f $temp] [format %0.3f $tempErr] [format %0.3f $tempDer]  \
         [format %0.6g $phi1] [format %0.2g $phi1Err]    \
         [format %0.6g $phi2] [format %0.2g $phi2Err]    \

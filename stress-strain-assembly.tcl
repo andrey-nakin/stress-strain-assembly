@@ -6,6 +6,8 @@
 # \u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E \u043E\u0434\u043D\u043E\u0432\u0440\u0435\u043C\u0435\u043D\u043D\u043E \u0438\u0437\u043C\u0435\u0440\u044F\u0435\u043C\u044B\u0445 \u043E\u0431\u0440\u0430\u0437\u0446\u043E\u0432: 1
 ###############################################################################
 
+package provide app-stress-strain-assembly 1.0.0
+
 package require Tcl 8.5
 package require Tk 8.5
 package require Ttk 8.5
@@ -24,6 +26,8 @@ package require measure::datafile
 package require measure::format
 package require startfile
 package require measure::widget::fullscreen
+
+package require ssa::utils
 
 ###############################################################################
 # \u041A\u043E\u043D\u0441\u0442\u0430\u043D\u0442\u044B
@@ -206,6 +210,10 @@ proc testLir916 { lir btn } {
 }
 
 proc resetAngles {} {
+    global settings
+
+	set settings(lir1.zero) [::hardware::skbis::lir916::setZero $settings(lir1.addr)]
+	set settings(lir2.zero) [::hardware::skbis::lir916::setZero $settings(lir2.addr)]
 }
 
 ###############################################################################

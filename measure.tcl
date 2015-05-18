@@ -5,6 +5,8 @@
 # Измерительный модуль
 ###############################################################################
 
+package provide ssa::measure 1.0.0
+
 package require math::statistics
 package require measure::logger
 package require measure::config
@@ -13,8 +15,6 @@ package require measure::interop
 package require measure::ranges
 package require measure::measure
 package require measure::listutils
-
-package provide ssa::measure 0.1.0
 
 ###############################################################################
 # Константы

@@ -5,6 +5,8 @@
 # Процедуры общего назначения
 ###############################################################################
 
+package provide ssa::utils 1.0.0
+
 package require hardware::owen::mvu8
 package require measure::thermocouple
 package require measure::listutils
@@ -12,8 +14,6 @@ package require measure::math
 package require measure::sigma
 package require hardware::owen::trm201
 package require hardware::skbis::lir916
-
-package provide ssa::utils 0.1.0
 
 # Число измерений, по которым определяется производная dT/dt
 set DERIVATIVE_READINGS 10
@@ -30,6 +30,8 @@ proc validateSettings {} {
 		dut.lengthErr 0.0
 		dut.momentumErrErr 0.0
 
+		lir1.zero 0
+		lir2.zero 0
 		lir2.coeff 1.0
     }	
 }
@@ -96,8 +98,8 @@ proc setup {} {
     global lir1 lir2 trm
 
 	# ЛИР-16
-    set lir1 [::hardware::skbis::lir916::init -com [measure::config::get rs485.serialPort] -addr [measure::config::get lir1.addr] -baud [measure::config::get lir1.baud] ]
-    set lir2 [::hardware::skbis::lir916::init -com [measure::config::get rs485.serialPort] -addr [measure::config::get lir2.addr] -baud [measure::config::get lir2.baud] ]
+    set lir1 [::hardware::skbis::lir916::init -com [measure::config::get rs485.serialPort] -addr [measure::config::get lir1.addr] -baud [measure::config::get lir1.baud] -zero [measure::config::get lir1.zero] ]
+    set lir2 [::hardware::skbis::lir916::init -com [measure::config::get rs485.serialPort] -addr [measure::config::get lir2.addr] -baud [measure::config::get lir2.baud] -zero [measure::config::get lir2.zero] ]
 
     # Настраиваем ТРМ-201 для измерения температуры
     set trm [::hardware::owen::trm201::init -protocol [measure::config::get trm1.protocol] -baud [measure::config::get trm1.baud] [measure::config::get rs485.serialPort] [measure::config::get trm1.addr]]
@@ -199,7 +201,6 @@ proc readTempTrm {} {
     global trm
     return [::hardware::owen::trm201::readTemperature $trm]
 }
-
 
 proc readAngles {} {
     global lir1 lir2

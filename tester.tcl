@@ -7,6 +7,8 @@
 #   и выводить в окно программы
 ###############################################################################
 
+package provide ssa::tester 1.0.0
+
 package require measure::logger
 package require measure::config
 package require measure::interop
@@ -15,8 +17,6 @@ package require measure::datafile
 package require measure::measure
 package require measure::format
 package require ssa::utils
-
-package provide ssa::tester 0.1.0
 
 set DELAY 1000
 

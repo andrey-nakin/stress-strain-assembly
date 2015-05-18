@@ -226,7 +226,7 @@ proc calibrateLir916 { lir btn } {
 		$p.lstep2 configure -state disabled
 		$p.step2 configure -state disabled
 		$p.lstep3 configure -state enabled
-		$p.numOfRounds configure -state enabled
+		$p.numOfRounds configure -state normal
 		$p.save configure -state enabled
 	}
 
@@ -265,7 +265,7 @@ proc calibrateLir916 { lir btn } {
 
     grid [ttk::label $p.lstep3 -text "\u0428\u0430\u0433 3. \u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0447\u0438\u0441\u043B\u043E \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u043E\u0432 \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C\u00BB" -state disabled] -row 4 -column 0 -columnspan 2 -sticky w
 
-    grid [ttk::spinbox $p.numOfRounds -width 15 -textvariable numOfRounds -from 1 -to 1000 -increment 1 -validate key -validatecommand {string is double %P} -state disabled] -row 5 -column 0 -sticky e
+    grid [ttk::spinbox $p.numOfRounds -width 15 -textvariable numOfRounds -from 0 -to 1000 -increment 1 -validate key -validatecommand {string is double %P} -state disabled] -row 5 -column 0 -sticky e
     grid [ttk::button $p.save -text "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C" -command [list step3 $p $btn] -state disabled] -row 5 -column 1 -sticky e
 
 	grid columnconfigure $p { 0 1 } -pad 5
@@ -324,7 +324,7 @@ set log [measure::logger::init measure]
 ::measure::datafile::startup
 
 set w ""
-wm title $w. "\u0423\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u043F\u043E \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044E \u0434\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u0438 \u043D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u044F. \u0412\u0435\u0440\u0441\u0438\u044F 1.0.0"
+wm title $w. "\u0423\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u043F\u043E \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044E \u0434\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u0438 \u043D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u044F. \u0412\u0435\u0440\u0441\u0438\u044F [package versions app-stress-strain-assembly]"
 
 wm protocol $w. WM_DELETE_WINDOW { quit }
 
@@ -580,7 +580,11 @@ grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
 # botton panel
-::measure::widget::std-bottom-panel $w
+frame $w.fr
+pack $w.fr -fill x -side bottom
+pack [ttk::button $w.fr.bexit -text "\u0412\u044b\u0445\u043e\u0434" -image ::img::delete -compound left -command quit] -padx 5 -pady {20 5} -side right
+
+pack [ttk::label $w.fr.lhint -text "F11: \u0432\u043A\u043B\u044E\u0447\u0438\u0442\u044C/\u0432\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u043F\u043E\u043B\u043D\u043E\u044D\u043A\u0440\u0430\u043D\u043D\u044B\u0439 \u0440\u0435\u0436\u0438\u043C"] -padx 5 -pady {20 5} -side left
 
 # read configuration from INI file
 measure::config::read

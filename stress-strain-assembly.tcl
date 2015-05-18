@@ -1,9 +1,8 @@
 #!/usr/bin/wish
 
 ###############################################################################
-# \u0418\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u0430\u044F \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u2116 008
-# \u0418\u0437\u043C\u0435\u0440\u044F\u0435\u043C \u0434\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044E \u0438 \u043D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u0435 \u0432 \u0441\u043A\u0440\u0443\u0447\u0438\u0432\u0430\u0435\u043C\u043E\u043C \u043E\u0431\u0440\u0430\u0437\u0446\u0435
-# \u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E \u043E\u0434\u043D\u043E\u0432\u0440\u0435\u043C\u0435\u043D\u043D\u043E \u0438\u0437\u043C\u0435\u0440\u044F\u0435\u043C\u044B\u0445 \u043E\u0431\u0440\u0430\u0437\u0446\u043E\u0432: 1
+# Stress & strain measurement assembly
+# Main module
 ###############################################################################
 
 package provide app-stress-strain-assembly 1.0.0
@@ -30,15 +29,6 @@ package require hardware::skbis::lir916
 
 package require ssa::utils
 
-###############################################################################
-# \u041A\u043E\u043D\u0441\u0442\u0430\u043D\u0442\u044B
-###############################################################################
-
-###############################################################################
-# \u041F\u0440\u043E\u0446\u0435\u0434\u0443\u0440\u044B
-###############################################################################
-
-# \u041E\u0447\u0438\u0449\u0430\u0435\u043C \u043F\u043E\u043B\u044F \u0441 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u0430\u043C\u0438 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439
 proc clearResults {} {
     global runtime chartTau_gamma chartT_t chartGamma_T chartTau_T
 
@@ -54,18 +44,13 @@ proc clearResults {} {
    	measure::chart::${chartTau_T}::clear
 }
 
-# \u0417\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C \u0442\u0435\u0441\u0442\u043E\u0432\u044B\u0439 \u043C\u043E\u0434\u0443\u043B\u044C
 proc startTester {} {
-	# \u0421\u043E\u0445\u0440\u0430\u043D\u044F\u0435\u043C \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
 	measure::config::write
 
-    # \u041E\u0447\u0438\u0449\u0430\u0435\u043C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0432 \u043E\u043A\u043D\u0435 \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
 	clearResults
 
-    # \u0421\u0431\u0440\u0430\u0441\u044B\u0432\u0430\u0435\u043C \u0441\u0438\u0433\u043D\u0430\u043B "\u043F\u0440\u0435\u0440\u0432\u0430\u043D"
     measure::interop::clearTerminated
 
-	# \u0417\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C \u043D\u0430 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435 \u0444\u043E\u043D\u043E\u0432\u044B\u0439 \u043F\u043E\u0442\u043E\u043A	\u0441 \u043F\u0440\u043E\u0446\u0435\u0434\u0443\u0440\u043E\u0439 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F
 	measure::interop::startWorker { package require ssa::tester } {} {}
 }
 
@@ -73,7 +58,6 @@ proc terminateTester {} {
 	measure::interop::waitForWorkerThreads
 }
 
-# \u041F\u0440\u043E\u0446\u0435\u0434\u0443\u0440\u0430 \u0432\u044B\u0437\u044B\u0432\u0430\u0435\u0438\u0441\u044F \u0438\u0437 \u0444\u043E\u043D\u043E\u0432\u043E\u0433\u043E \u0440\u0430\u0431\u043E\u0447\u0435\u0433\u043E \u043F\u043E\u0442\u043E\u043A\u0430 \u043F\u043E \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0438\u0438 \u0435\u0433\u043E \u0440\u0430\u0431\u043E\u0442\u044B
 proc stopMeasure {} {
 	global w log workerId
 
@@ -92,15 +76,15 @@ proc checkPrerequisites {} {
 	global settings
 
 	if { ![info exists settings(prog.method)] || $settings(prog.method) == "" } {
-		error "Не выбран метод регистрации"
+		error "\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D \u043C\u0435\u0442\u043E\u0434 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438"
 	}
 
 	if { ![info exists settings(measure.method)] || $settings(measure.method) == "" } {
-		error "Не выбран метод измерения"
+		error "\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D \u043C\u0435\u0442\u043E\u0434 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F"
 	}
 
 	if { ![info exists settings(dut.length)] || $settings(dut.length) == "" || ![info exists settings(dut.r)] || $settings(dut.r) == "" || ![info exists settings(dut.momentum)] || $settings(dut.momentum) == "" } {
-		error "Не введены параметры образца"
+		error "\u041D\u0435 \u0432\u0432\u0435\u0434\u0435\u043D\u044B \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043E\u0431\u0440\u0430\u0437\u0446\u0430"
 	}
 }
 
@@ -108,33 +92,26 @@ proc startMeasure {} {
 	global w log runtime chartTau_gamma workerId
 
 	if { [catch { checkPrerequisites } err] } {
-		tk_messageBox -icon error -title "Ошибка" -message $err
+		tk_messageBox -icon error -title "\u041E\u0448\u0438\u0431\u043A\u0430" -message $err
 		return 
 	}
 
 	$w.nb.m.ctl.start configure -state disabled
 	$w.nb tab 4 -state disabled
 
-	# \u041E\u0441\u0442\u0430\u043D\u0430\u0432\u043B\u0438\u0432\u0430\u0435\u043C \u0440\u0430\u0431\u043E\u0442\u0443 \u0442\u0435\u0441\u0442\u0435\u0440\u0430
 	terminateTester
 
-	# \u0421\u043E\u0445\u0440\u0430\u043D\u044F\u0435\u043C \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
 	measure::config::write
 
-    # \u0421\u0431\u0440\u0430\u0441\u044B\u0432\u0430\u0435\u043C \u0441\u0438\u0433\u043D\u0430\u043B "\u043F\u0440\u0435\u0440\u0432\u0430\u043D"
     measure::interop::clearTerminated
     
-	# \u0417\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C \u043D\u0430 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435 \u0444\u043E\u043D\u043E\u0432\u044B\u0439 \u043F\u043E\u0442\u043E\u043A	\u0441 \u043F\u0440\u043E\u0446\u0435\u0434\u0443\u0440\u043E\u0439 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F
 	set workerId [measure::interop::startWorker { package require ssa::measure } { stopMeasure } ]
 
-    # \u0420\u0430\u0437\u0440\u0435\u0448\u0430\u0435\u043C \u043A\u043D\u043E\u043F\u043A\u0443 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u0430 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439
 	$w.nb.m.ctl.stop configure -state normal
 	$w.nb.m.ctl.measure configure -state normal
 	
-    # \u041E\u0447\u0438\u0449\u0430\u0435\u043C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0432 \u043E\u043A\u043D\u0435 \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
 	clearResults
 
-	# \u041E\u0447\u0438\u0449\u0430\u0435\u043C \u0433\u0440\u0430\u0444\u0438\u043A
 	measure::chart::${chartTau_gamma}::clear
 }
 
@@ -159,24 +136,18 @@ proc openResults {} {
 	}
 }
 
-# \u0417\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0438\u0435 \u0440\u0430\u0431\u043E\u0442\u044B \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
 proc quit {} {
-	# \u0421\u043E\u0445\u0440\u0430\u043D\u044F\u0435\u043C \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
 	::measure::config::write
 
-	# \u0437\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u043C \u0438\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439 \u043F\u043E\u0442\u043E\u043A, \u0435\u0441\u043B\u0438 \u043E\u043D \u0437\u0430\u043F\u0443\u0449\u0435\u043D
 	::measure::interop::waitForWorkerThreads
 
-    # \u043E\u0441\u0442\u0430\u043D\u0430\u0432\u043B\u0438\u0432\u0430\u0435\u043C \u043F\u043E\u0442\u043E\u043A \u0437\u0430\u043F\u0438\u0441\u0438 \u0434\u0430\u043D\u043D\u044B\u0445
     ::measure::datafile::shutdown
      
-    # \u043E\u0441\u0442\u0430\u043D\u0430\u0432\u043B\u0438\u0432\u0430\u0435\u043C \u043F\u043E\u0442\u043E\u043A \u043F\u0440\u043E\u0442\u043E\u043A\u043E\u043B\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F
 	::measure::logger::shutdown
 
 	exit
 }
 
-# \u041F\u0440\u043E\u0446\u0435\u0434\u0443\u0440\u0430 \u0440\u0430\u0437\u0440\u0435\u0448\u0430\u0435\u0442/\u0437\u0430\u043F\u0440\u0435\u0449\u0430\u0435\u0442 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u0432\u0432\u043E\u0434\u0430 \u044D\u0442\u0430\u043B\u043E\u043D\u043D\u043E\u0433\u043E \u0441\u043E\u043F\u0440\u043E\u0442\u0438\u0432\u043B\u0435\u043D\u0438\u044F
 proc toggleProgControls {} {
 	global w
 	set p "$w.nb.ms.l.prog"
@@ -310,10 +281,6 @@ proc resetAngles {} {
 	set settings(lir2.zero) [::hardware::skbis::lir916::setZero $settings(lir2.addr)]
 }
 
-###############################################################################
-# \u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u0439
-###############################################################################
-
 proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer gamma gammaErr tau tauErr write } {
     global runtime chartTau_gamma chartGamma_T chartTau_T chartT_t w lastDisplayTime
 
@@ -325,7 +292,6 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer gamma gammaErr tau
 	}
 	set lastDisplayTime $tm
     
-    # \u0412\u044B\u0432\u043E\u0434\u0438\u043C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0432 \u043E\u043A\u043D\u043E \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
 	set runtime(phi1) [::measure::format::valueWithErr -noScale -- $phi1 $phi1Err ""]
 	set runtime(phi2) [::measure::format::valueWithErr -noScale -- $phi2 $phi2Err ""]
 	set runtime(gamma) [::measure::format::valueWithErr -noScale -- $gamma $gammaErr ""]
@@ -347,33 +313,29 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer gamma gammaErr tau
 }
 
 ###############################################################################
-# \u041D\u0430\u0447\u0430\u043B\u043E \u0441\u043A\u0440\u0438\u043F\u0442\u0430
+# Entry point
 ###############################################################################
 
+# start background logging in a separate thread
 set log [measure::logger::init measure]
-# \u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C \u0432\u044B\u0434\u0435\u043B\u0435\u043D\u043D\u044B\u0439 \u043F\u043E\u0442\u043E\u043A \u043F\u0440\u043E\u0442\u043E\u043A\u043E\u043B\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F
 ::measure::logger::server
 
-# \u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C \u0432\u044B\u0434\u0435\u043B\u0435\u043D\u043D\u044B\u0439 \u043F\u043E\u0442\u043E\u043A \u0437\u0430\u043F\u0438\u0441\u0438 \u0434\u0430\u043D\u043D\u044B\u0445
+# start background result file saving in a separate thread
 ::measure::datafile::startup
 
-# \u0421\u043E\u0437\u0434\u0430\u0451\u043C \u043E\u043A\u043D\u043E \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
 set w ""
 wm title $w. "\u0423\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u043F\u043E \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044E \u0434\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u0438 \u043D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u044F. \u0412\u0435\u0440\u0441\u0438\u044F 1.0.0"
 
-# \u041F\u0440\u0438 \u043D\u0430\u0436\u0430\u0442\u0438\u0438 \u043A\u0440\u0435\u0441\u0442\u0438\u043A\u0430 \u0432 \u0443\u0433\u043B\u0443 \u043E\u043A\u043D\u0430 \u0432\u044B\u0437\u044B\u0432\u0430\u0442\u044C\u0441\u043F\u0435\u0446\u0438\u0430\u043B\u044C\u043D\u0443\u044E \u043F\u0440\u043E\u0446\u0435\u0434\u0443\u0440\u0443 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0438\u044F
 wm protocol $w. WM_DELETE_WINDOW { quit }
 
-# \u041F\u0430\u043D\u0435\u043B\u044C \u0437\u0430\u043A\u043B\u0430\u0434\u043E\u043A
 ttk::notebook $w.nb
 pack $w.nb -fill both -expand 1 -padx 2 -pady 3
 ttk::notebook::enableTraversal $w.nb
 
-# \u0417\u0430\u043A\u043B\u0430\u0434\u043A\u0430 "\u0418\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0435"
+# Measurement tab
 ttk::frame $w.nb.m
 $w.nb add $w.nb.m -text " \u0418\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0435 "
 
-# \u0420\u0430\u0437\u0434\u0435\u043B "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435"
 set p [ttk::labelframe $w.nb.m.ctl -text " \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 " -pad 10]
 pack $p -fill x -side bottom -padx 10 -pady 5
 
@@ -386,7 +348,6 @@ grid columnconfigure $p { 0 2 } -pad 50
 grid columnconfigure $p { 1 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
-# \u0420\u0430\u0437\u0434\u0435\u043B "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F"
 set p [ttk::labelframe $w.nb.m.v -text " \u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F " -pad 10]
 pack $p -fill x -side bottom -padx 10 -pady 5
 
@@ -412,7 +373,6 @@ grid columnconfigure $p { 2 5 } -minsize 20
 grid columnconfigure $p { 1 4 7 } -weight 1
 grid rowconfigure $p { 0 1 2 3 } -pad 5
 
-# \u0420\u0430\u0437\u0434\u0435\u043B "\u0413\u0440\u0430\u0444\u0438\u043A"
 set p [ttk::labelframe $w.nb.m.c -text " \u041E\u043F\u0435\u0440\u0430\u0442\u0438\u0432\u043D\u044B\u0439 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u044C " -pad 2]
 pack $p -fill both -padx 10 -pady 5 -expand 1
 
@@ -443,7 +403,7 @@ grid rowconfigure $p { 0 1 } -weight 1
 
 place [ttk::button $p.cb -text "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C" -command clearResults] -anchor ne -relx 1.0 -rely 0.0
 
-# \u0417\u0430\u043A\u043B\u0430\u0434\u043A\u0430 "\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F"
+# Measurement parameters tab
 ttk::frame $w.nb.ms
 $w.nb add $w.nb.ms -text " \u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F "
 
@@ -453,9 +413,6 @@ grid [ttk::frame $w.nb.ms.b] -column 0 -columnspan 2 -row 1 -sticky we
 
 grid columnconfigure $w.nb.ms { 0 1 } -weight 1
 
-# \u041B\u0435\u0432\u0430\u044F \u043A\u043E\u043B\u043E\u043D\u043A\u0430
-
-# \u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u0441\u043F\u043E\u0441\u043E\u0431\u0430 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438
 set p [ttk::labelframe $w.nb.ms.l.prog -text " \u041C\u0435\u0442\u043E\u0434 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438 " -pad 10]
 
 grid [ttk::label $p.ltime -text "\u0412\u0440\u0435\u043C\u0435\u043D\u043D\u0430\u044F \u0437\u0430\u0432\u0438\u0441\u0438\u043C\u043E\u0441\u0442\u044C:"] -row 0 -column 0 -sticky w
@@ -479,8 +436,6 @@ grid columnconfigure $p { 1 } -weight 1
 
 pack $p -fill x -padx 10 -pady 5
 
-# \u041F\u0440\u0430\u0432\u0430\u044F \u043A\u043E\u043B\u043E\u043D\u043A\u0430
-
 set p [ttk::labelframe $w.nb.ms.r.measure -text " \u041C\u0435\u0442\u043E\u0434 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F " -pad 10]
 
 grid [ttk::label $p.ltime -text "\u0414\u0438\u043D\u0430\u043C\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043C\u043E\u043C\u0435\u043D\u0442:"] -row 0 -column 0 -sticky w
@@ -495,11 +450,10 @@ grid columnconfigure $p { 1 } -weight 1
 
 pack $p -fill x -padx 10 -pady 5
 
-# \u0417\u0430\u043A\u043B\u0430\u0434\u043A\u0430 "\u041E\u0431\u0440\u0430\u0437\u0435\u0446"
+# DUT parameters tab
 ttk::frame $w.nb.dut
 $w.nb add $w.nb.dut -text " \u041E\u0431\u0440\u0430\u0437\u0435\u0446 "
 
-# \u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u043E\u0432 \u043E\u0431\u0440\u0430\u0437\u0446\u0430
 set p [ttk::labelframe $w.nb.dut.dut -text " \u0413\u0435\u043E\u043C\u0435\u0442\u0440\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B " -pad 10]
 pack $p -fill x -padx 10 -pady 5
 
@@ -522,7 +476,6 @@ grid columnconfigure $p { 0 1 2 3 } -pad 5
 grid rowconfigure $p { 0 1 2 } -pad 5
 grid columnconfigure $p { 0 } -weight 1
 
-# \u0420\u0430\u0437\u0434\u0435\u043B \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A \u0432\u044B\u0432\u043E\u0434\u0430
 set p [ttk::labelframe $w.nb.dut.reg -text " \u0424\u0430\u0439\u043B\u044B " -pad 10]
 
 grid [ttk::label $p.lname -text "\u0418\u043C\u044F \u0444\u0430\u0439\u043B\u0430 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u043E\u0432: " -anchor e] -row 0 -column 0 -sticky w
@@ -546,7 +499,7 @@ grid rowconfigure $p { 5 } -pad 10
 
 pack $p -fill x -padx 10 -pady 5
 
-# \u0417\u0430\u043A\u043B\u0430\u0434\u043A\u0430 "\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432"
+# Device parameters tab
 ttk::frame $w.nb.tsetup
 $w.nb add $w.nb.tsetup -text " \u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432 "
 
@@ -626,16 +579,14 @@ grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
 grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
-# \u0421\u0442\u0430\u043D\u0434\u0430\u0440\u0442\u043D\u0430\u044F \u043F\u0430\u043D\u0435\u043B\u044C
+# botton panel
 ::measure::widget::std-bottom-panel $w
 
-# \u0427\u0438\u0442\u0430\u0435\u043C \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438
+# read configuration from INI file
 measure::config::read
 
-# \u041D\u0430\u0441\u0442\u0440\u0430\u0438\u0432\u0430\u0435\u043C \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F
 toggleProgControls
 
-# \u0417\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C \u0442\u0435\u0441\u0442\u0435\u0440
 startTester
 
 #vwait forever

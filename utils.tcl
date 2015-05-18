@@ -26,6 +26,9 @@ proc validateSettings {} {
         result.rewrite 1
         result.comment ""
 
+		prog.time.step 1000
+		prog.temp.step 1.0
+
 		dut.rErr 0.0
 		dut.lengthErr 0.0
 		dut.momentumErr 0.0

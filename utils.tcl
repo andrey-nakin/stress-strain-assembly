@@ -28,7 +28,7 @@ proc validateSettings {} {
 
 		dut.rErr 0.0
 		dut.lengthErr 0.0
-		dut.momentumErrErr 0.0
+		dut.momentumErr 0.0
 
 		lir1.zero 0
 		lir2.zero 0
@@ -74,7 +74,7 @@ proc calcTau { phi2 phi2Err } {
 		set momentum $settings(dut.momentum)
 		set momentumErr $settings(dut.momentumErr)
 
-		set s [expr sin($phi2)]
+		set s [expr abs(sin($phi2))]
 		set sErr [measure::sigma::sin $phi2 $phi2Err]
 
 		set a [expr 1.5 * $momentum * $s]
@@ -93,16 +93,31 @@ proc calcTau { phi2 phi2Err } {
 	return [list $res $resErr]
 }
 
+proc initLir { key } {
+    return [::hardware::skbis::lir916::init \
+		-com [measure::config::get -required rs485.serialPort] \
+		-addr [measure::config::get -required ${key}.addr] \
+		-baud [measure::config::get ${key}.baud 9600] \
+		-zero [measure::config::get ${key}.zero 0] \
+		-coeff [measure::config::get lir2.coeff 1.0] \
+	]
+}
+
 # Инициализация приборов
 proc setup {} {
     global lir1 lir2 trm
 
 	# ЛИР-16
-    set lir1 [::hardware::skbis::lir916::init -com [measure::config::get rs485.serialPort] -addr [measure::config::get lir1.addr] -baud [measure::config::get lir1.baud] -zero [measure::config::get lir1.zero] ]
-    set lir2 [::hardware::skbis::lir916::init -com [measure::config::get rs485.serialPort] -addr [measure::config::get lir2.addr] -baud [measure::config::get lir2.baud] -zero [measure::config::get lir2.zero] ]
+    set lir1 [initLir lir1]
+    set lir2 [initLir lir2]
 
     # Настраиваем ТРМ-201 для измерения температуры
-    set trm [::hardware::owen::trm201::init -protocol [measure::config::get trm1.protocol] -baud [measure::config::get trm1.baud] [measure::config::get rs485.serialPort] [measure::config::get trm1.addr]]
+    set trm [::hardware::owen::trm201::init \
+		-protocol [measure::config::get trm1.protocol OWEN] \
+		-baud [measure::config::get trm1.baud 9600] \
+		[measure::config::get -required rs485.serialPort] \
+		[measure::config::get -required trm1.addr] \
+	]
     # ::hardware::owen::trm201::setTcType $trm [measure::config::get tc.type] 
 }
 

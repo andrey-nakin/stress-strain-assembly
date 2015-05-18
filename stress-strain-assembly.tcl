@@ -26,6 +26,7 @@ package require measure::datafile
 package require measure::format
 package require startfile
 package require measure::widget::fullscreen
+package require hardware::skbis::lir916
 
 package require ssa::utils
 
@@ -68,9 +69,7 @@ proc startTester {} {
 	measure::interop::startWorker { package require ssa::tester } {} {}
 }
 
-# \u041F\u0440\u0435\u0440\u044B\u0432\u0430\u0435\u043C \u0440\u0430\u0431\u043E\u0442\u0443 \u0442\u0435\u0441\u0442\u043E\u0432\u043E\u0433\u043E \u043C\u043E\u0434\u0443\u043B\u044F
 proc terminateTester {} {
-	# \u041F\u043E\u0441\u044B\u043B\u0430\u0435\u043C \u0432 \u0438\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439 \u043F\u043E\u0442\u043E\u043A \u0441\u0438\u0433\u043D\u0430\u043B \u043E\u0431 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u0435
 	measure::interop::waitForWorkerThreads
 }
 
@@ -209,6 +208,86 @@ proc testLir916 { lir btn } {
 	after 100 [list testLir916Impl $lir $btn]
 }
 
+proc setCoeff { coeff } {
+	global settings
+
+	set settings(lir2.coeff) $coeff
+	::hardware::skbis::lir916::setCoeff $settings(lir1.addr) $coeff
+	::hardware::skbis::lir916::setCoeff $settings(lir2.addr) $coeff
+}
+
+proc calibrateLir916 { lir btn } {
+
+	proc readAngle {} {
+		set lir2 [initLir lir2]
+		lassign [::hardware::skbis::lir916::readAngle $lir2 1] angle
+		::hardware::skbis::lir916::done $lir2
+		return $angle
+	}
+
+	proc step1 { p } {
+		global startAngle
+
+		set startAngle [readAngle]
+
+		$p.lstep1 configure -state disabled
+		$p.step1 configure -state disabled
+		$p.lstep2 configure -state enabled
+		$p.step2 configure -state enabled
+	}
+
+	proc step2 { p } {
+		$p.lstep2 configure -state disabled
+		$p.step2 configure -state disabled
+		$p.lstep3 configure -state enabled
+		$p.numOfRounds configure -state enabled
+		$p.save configure -state enabled
+	}
+
+	proc step3 { p btn } {
+		global startAngle numOfRounds
+
+		set pi 3.14159265358979323
+		set endAngle [readAngle]
+		setCoeff [format %0.8g [expr (2.0 * $pi * $numOfRounds) / abs($endAngle - $startAngle)]]
+
+		finish $btn
+	}
+
+	proc finish { btn } {
+		destroy .callir916
+		startTester
+		$btn configure -state enabled
+	}
+
+    $btn configure -state disabled
+
+	terminateTester
+
+	set w .callir916
+	tk::toplevel $w
+	wm title $w "Калибровка угла поворота"
+	wm protocol $w WM_DELETE_WINDOW [list finish $btn]
+	wm attributes $w -topmost 1
+
+	set p [ttk::frame $w.c]
+    grid [ttk::label $p.lstep1 -text "Шаг 1. Зафиксируйте вал, присоединённый к датчику угла № 2, и нажмите кнопку «Дальше»"] -row 0 -column 0 -columnspan 2 -sticky w
+    grid [ttk::button $p.step1 -text "Дальше" -command [list step1 $p] ] -row 1 -column 1 -sticky e
+
+    grid [ttk::label $p.lstep2 -text "Шаг 2. Проверните вал на определённое число оборотов, вновь зафиксируйте и нажмите кнопку «Дальше»" -state disabled] -row 2 -column 0 -columnspan 2 -sticky w
+    grid [ttk::button $p.step2 -text "Дальше" -command [list step2 $p] -state disabled] -row 3 -column 1 -sticky e
+
+    grid [ttk::label $p.lstep3 -text "Шаг 3. Введите число поворотов и нажмите кнопку «Сохранить»" -state disabled] -row 4 -column 0 -columnspan 2 -sticky w
+
+    grid [ttk::spinbox $p.numOfRounds -width 15 -textvariable numOfRounds -from 1 -to 1000 -increment 1 -validate key -validatecommand {string is double %P} -state disabled] -row 5 -column 0 -sticky e
+    grid [ttk::button $p.save -text "Сохранить" -command [list step3 $p $btn] -state disabled] -row 5 -column 1 -sticky e
+
+	grid columnconfigure $p { 0 1 } -pad 5
+	grid columnconfigure $p { 0 } -weight 1
+	grid rowconfigure $p { 0 1 2 3 4 5 } -pad 5
+	pack $p -fill both -expand 1 -padx 10 -pady 10
+}
+
 proc resetAngles {} {
     global settings
 
@@ -250,8 +329,6 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer gamma gammaErr tau
     	measure::chart::${chartGamma_T}::addPoint $temp $gamma test
     	measure::chart::${chartTau_T}::addPoint $temp $tau test
     }
-
-	event generate ${w}. <<ReadTemperature>> -data $temp
 }
 
 ###############################################################################
@@ -271,9 +348,6 @@ wm title $w. "\u0423\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u043F\u043
 
 # \u041F\u0440\u0438 \u043D\u0430\u0436\u0430\u0442\u0438\u0438 \u043A\u0440\u0435\u0441\u0442\u0438\u043A\u0430 \u0432 \u0443\u0433\u043B\u0443 \u043E\u043A\u043D\u0430 \u0432\u044B\u0437\u044B\u0432\u0430\u0442\u044C\u0441\u043F\u0435\u0446\u0438\u0430\u043B\u044C\u043D\u0443\u044E \u043F\u0440\u043E\u0446\u0435\u0434\u0443\u0440\u0443 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0438\u044F
 wm protocol $w. WM_DELETE_WINDOW { quit }
-
-# \u0412\u0438\u0440\u0442\u0443\u0430\u043B\u044C\u043D\u043E\u0435 \u0441\u043E\u0431\u044B\u0442\u0438\u0435, \u0433\u0435\u043D\u0435\u0440\u0438\u0440\u0443\u0435\u043C\u043E\u0435 \u043F\u0440\u0438 \u043A\u0430\u0436\u0434\u043E\u043C \u0447\u0442\u0435\u043D\u0438\u0438 \u0442\u0435\u043C\u043F\u0435\u0440\u0430\u0442\u0443\u0440\u044B
-event add <<ReadTemperature>> <Control-p>
 
 # \u041F\u0430\u043D\u0435\u043B\u044C \u0437\u0430\u043A\u043B\u0430\u0434\u043E\u043A
 ttk::notebook $w.nb
@@ -521,7 +595,7 @@ grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
 grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
-# \u0417\u0430\u043A\u043B\u0430\u0434\u043A\u0430 "\u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432"
+# Calibration tab
 ttk::frame $w.nb.cal
 $w.nb add $w.nb.cal -text " \u041A\u0430\u043B\u0438\u0431\u0440\u043E\u0432\u043A\u0430 \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432 "
 
@@ -531,7 +605,7 @@ pack $p -fill x -padx 10 -pady 5
 grid [ttk::label $p.lcoeff -text "\u041A\u043E\u044D\u0444\u0444\u0438\u0446\u0438\u0435\u043D\u0442 \u043F\u0435\u0440\u0435\u0441\u0447\u0451\u0442\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430:"] -row 0 -column 0 -sticky w
 grid [ttk::spinbox $p.coeff -width 12 -textvariable settings(lir2.coeff) -from 0.001 -to 1000 -validate key -validatecommand {string is double %P}] -row 0 -column 1 -sticky w
 
-grid [ttk::button $p.test -text "\u041E\u043F\u0440\u0435\u0434\u0435\u043B\u0438\u0442\u044C \u043A\u043E\u044D\u0444\u0444\u0438\u0446\u0438\u0435\u043D\u0442" -command [list testLir916 lir2 $p.test] ] -row 0 -column 6 -sticky e
+grid [ttk::button $p.test -text "\u041E\u043F\u0440\u0435\u0434\u0435\u043B\u0438\u0442\u044C \u043A\u043E\u044D\u0444\u0444\u0438\u0446\u0438\u0435\u043D\u0442" -command [list calibrateLir916 lir2 $p.test] ] -row 0 -column 6 -sticky e
 
 grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
 grid columnconfigure $p { 6 } -weight 1

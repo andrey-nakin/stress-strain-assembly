@@ -1,7 +1,7 @@
 #!/usr/bin/wish
 
 ###############################################################################
-# \u0418\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u0430\u044F \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 № 008
+# \u0418\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u0430\u044F \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u2116 008
 # \u0418\u0437\u043C\u0435\u0440\u044F\u0435\u043C \u0434\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044E \u0438 \u043D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u0435 \u0432 \u0441\u043A\u0440\u0443\u0447\u0438\u0432\u0430\u0435\u043C\u043E\u043C \u043E\u0431\u0440\u0430\u0437\u0446\u0435
 # \u041A\u043E\u043B\u0438\u0447\u0435\u0441\u0442\u0432\u043E \u043E\u0434\u043D\u043E\u0432\u0440\u0435\u043C\u0435\u043D\u043D\u043E \u0438\u0437\u043C\u0435\u0440\u044F\u0435\u043C\u044B\u0445 \u043E\u0431\u0440\u0430\u0437\u0446\u043E\u0432: 1
 ###############################################################################
@@ -79,23 +79,41 @@ proc stopMeasure {} {
 
 	unset workerId
 
-	# \u0417\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C \u0442\u0435\u0441\u0442\u0435\u0440
 	startTester
 
-	# \u0440\u0430\u0437\u0440\u0435\u0448\u0430\u0435\u043C \u043A\u043D\u043E\u043F\u043A\u0443 \u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439
 	$w.nb.m.ctl.start configure -state normal
      
-    # \u0417\u0430\u043F\u0440\u0435\u0449\u0430\u0435\u043C \u043A\u043D\u043E\u043F\u043A\u0443 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u0430 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439    
 	$w.nb.m.ctl.stop configure -state disabled
 	$w.nb.m.ctl.measure configure -state disabled
+	$w.nb tab 4 -state normal
 }
 
-# \u0417\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F
+proc checkPrerequisites {} {
+	global settings
+
+	if { ![info exists settings(prog.method)] || $settings(prog.method) == "" } {
+		error "Не выбран метод регистрации"
+	}
+
+	if { ![info exists settings(measure.method)] || $settings(measure.method) == "" } {
+		error "Не выбран метод измерения"
+	}
+
+	if { ![info exists settings(dut.length)] || $settings(dut.length) == "" || ![info exists settings(dut.r)] || $settings(dut.r) == "" || ![info exists settings(dut.momentum)] || $settings(dut.momentum) == "" } {
+		error "Не введены параметры образца"
+	}
+}
+
 proc startMeasure {} {
 	global w log runtime chartTau_gamma workerId
 
-	# \u0437\u0430\u043F\u0440\u0435\u0449\u0430\u0435\u043C \u043A\u043D\u043E\u043F\u043A\u0443 \u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439
+	if { [catch { checkPrerequisites } err] } {
+		tk_messageBox -icon error -title "Ошибка" -message $err
+		return 
+	}
+
 	$w.nb.m.ctl.start configure -state disabled
+	$w.nb tab 4 -state disabled
 
 	# \u041E\u0441\u0442\u0430\u043D\u0430\u0432\u043B\u0438\u0432\u0430\u0435\u043C \u0440\u0430\u0431\u043E\u0442\u0443 \u0442\u0435\u0441\u0442\u0435\u0440\u0430
 	terminateTester
@@ -120,19 +138,16 @@ proc startMeasure {} {
 	measure::chart::${chartTau_gamma}::clear
 }
 
-# \u041F\u0440\u0435\u0440\u044B\u0432\u0430\u0435\u043C \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F
 proc terminateMeasure {} {
     global w log
 
-    # \u0417\u0430\u043F\u0440\u0435\u0449\u0430\u0435\u043C \u043A\u043D\u043E\u043F\u043A\u0443 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u0430 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439    
 	$w.nb.m.ctl.stop configure -state disabled
 	$w.nb.m.ctl.measure configure -state disabled
+	$w.nb tab 4 -state normal
 	
-	# \u041F\u043E\u0441\u044B\u043B\u0430\u0435\u043C \u0432 \u0438\u0437\u043C\u0435\u0440\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0439 \u043F\u043E\u0442\u043E\u043A \u0441\u0438\u0433\u043D\u0430\u043B \u043E\u0431 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u0435
 	measure::interop::terminate
 }
 
-# \u041E\u0442\u043A\u0440\u044B\u0432\u0430\u0435\u043C \u0444\u0430\u0439\u043B \u0441 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u043C\u0438 \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F
 proc openResults {} {
     global settings
 
@@ -266,21 +281,21 @@ proc calibrateLir916 { lir btn } {
 
 	set w .callir916
 	tk::toplevel $w
-	wm title $w "Калибровка угла поворота"
+	wm title $w "\u041A\u0430\u043B\u0438\u0431\u0440\u043E\u0432\u043A\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430"
 	wm protocol $w WM_DELETE_WINDOW [list finish $btn]
 	wm attributes $w -topmost 1
 
 	set p [ttk::frame $w.c]
-    grid [ttk::label $p.lstep1 -text "Шаг 1. Зафиксируйте вал, присоединённый к датчику угла № 2, и нажмите кнопку «Дальше»"] -row 0 -column 0 -columnspan 2 -sticky w
-    grid [ttk::button $p.step1 -text "Дальше" -command [list step1 $p] ] -row 1 -column 1 -sticky e
+    grid [ttk::label $p.lstep1 -text "\u0428\u0430\u0433 1. \u0417\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u0443\u0439\u0442\u0435 \u0432\u0430\u043B, \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0451\u043D\u043D\u044B\u0439 \u043A \u0434\u0430\u0442\u0447\u0438\u043A\u0443 \u0443\u0433\u043B\u0430 \u2116 2, \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0414\u0430\u043B\u044C\u0448\u0435\u00BB"] -row 0 -column 0 -columnspan 2 -sticky w
+    grid [ttk::button $p.step1 -text "\u0414\u0430\u043B\u044C\u0448\u0435" -command [list step1 $p] ] -row 1 -column 1 -sticky e
 
-    grid [ttk::label $p.lstep2 -text "Шаг 2. Проверните вал на определённое число оборотов, вновь зафиксируйте и нажмите кнопку «Дальше»" -state disabled] -row 2 -column 0 -columnspan 2 -sticky w
-    grid [ttk::button $p.step2 -text "Дальше" -command [list step2 $p] -state disabled] -row 3 -column 1 -sticky e
+    grid [ttk::label $p.lstep2 -text "\u0428\u0430\u0433 2. \u041F\u0440\u043E\u0432\u0435\u0440\u043D\u0438\u0442\u0435 \u0432\u0430\u043B \u043D\u0430 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u0451\u043D\u043D\u043E\u0435 \u0447\u0438\u0441\u043B\u043E \u043E\u0431\u043E\u0440\u043E\u0442\u043E\u0432, \u0432\u043D\u043E\u0432\u044C \u0437\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u0443\u0439\u0442\u0435 \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0414\u0430\u043B\u044C\u0448\u0435\u00BB" -state disabled] -row 2 -column 0 -columnspan 2 -sticky w
+    grid [ttk::button $p.step2 -text "\u0414\u0430\u043B\u044C\u0448\u0435" -command [list step2 $p] -state disabled] -row 3 -column 1 -sticky e
 
-    grid [ttk::label $p.lstep3 -text "Шаг 3. Введите число поворотов и нажмите кнопку «Сохранить»" -state disabled] -row 4 -column 0 -columnspan 2 -sticky w
+    grid [ttk::label $p.lstep3 -text "\u0428\u0430\u0433 3. \u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0447\u0438\u0441\u043B\u043E \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u043E\u0432 \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C\u00BB" -state disabled] -row 4 -column 0 -columnspan 2 -sticky w
 
     grid [ttk::spinbox $p.numOfRounds -width 15 -textvariable numOfRounds -from 1 -to 1000 -increment 1 -validate key -validatecommand {string is double %P} -state disabled] -row 5 -column 0 -sticky e
-    grid [ttk::button $p.save -text "Сохранить" -command [list step3 $p $btn] -state disabled] -row 5 -column 1 -sticky e
+    grid [ttk::button $p.save -text "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C" -command [list step3 $p $btn] -state disabled] -row 5 -column 1 -sticky e
 
 	grid columnconfigure $p { 0 1 } -pad 5
 	grid columnconfigure $p { 0 } -weight 1
@@ -392,8 +407,8 @@ grid [ttk::entry $p.eder -textvariable runtime(tau) -state readonly] -row 1 -col
 grid [ttk::label $p.lr -text "T, \u041A:"] -row 1 -column 6 -sticky w
 grid [ttk::entry $p.er -textvariable runtime(temperature) -state readonly] -row 1 -column 7 -sticky we
 
-grid columnconfigure $p { 0 1 3 4 5 6 7 8 9 10 } -pad 5
-grid columnconfigure $p { 2 5 8 } -minsize 20
+grid columnconfigure $p { 0 1 3 4 5 6 7 } -pad 5
+grid columnconfigure $p { 2 5 } -minsize 20
 grid columnconfigure $p { 1 4 7 } -weight 1
 grid rowconfigure $p { 0 1 2 3 } -pad 5
 
@@ -565,7 +580,7 @@ grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
 grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
-set p [ttk::labelframe $w.nb.tsetup.lir1 -text " \u0414\u0435\u043A\u043E\u0434\u0435\u0440 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430 \u041B\u0418\u0420-916 № 1" -pad 10]
+set p [ttk::labelframe $w.nb.tsetup.lir1 -text " \u0414\u0435\u043A\u043E\u0434\u0435\u0440 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430 \u041B\u0418\u0420-916 \u2116 1" -pad 10]
 pack $p -fill x -padx 10 -pady 5
 
 grid [ttk::label $p.lnetAddr -text "\u0421\u0435\u0442\u0435\u0432\u043E\u0439 \u0430\u0434\u0440\u0435\u0441:"] -row 0 -column 0 -sticky w
@@ -580,7 +595,7 @@ grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
 grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
-set p [ttk::labelframe $w.nb.tsetup.lir2 -text " \u0414\u0435\u043A\u043E\u0434\u0435\u0440 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430 \u041B\u0418\u0420-916 № 2" -pad 10]
+set p [ttk::labelframe $w.nb.tsetup.lir2 -text " \u0414\u0435\u043A\u043E\u0434\u0435\u0440 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430 \u041B\u0418\u0420-916 \u2116 2" -pad 10]
 pack $p -fill x -padx 10 -pady 5
 
 grid [ttk::label $p.lnetAddr -text "\u0421\u0435\u0442\u0435\u0432\u043E\u0439 \u0430\u0434\u0440\u0435\u0441:"] -row 0 -column 0 -sticky w

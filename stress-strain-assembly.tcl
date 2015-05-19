@@ -640,12 +640,12 @@ grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
 # Thermocouple
-set p [ttk::labelframe $w.nb.cal.tc -text " Термопара " -pad 10]
+set p [ttk::labelframe $w.nb.cal.tc -text " \u0422\u0435\u0440\u043C\u043E\u043F\u0430\u0440\u0430 " -pad 10]
 pack $p -fill x -padx 10 -pady 5
 
-grid [ttk::label $p.lexpr -text "Выражение для коррекции:"] -row 0 -column 0 -sticky w
+grid [ttk::label $p.lexpr -text "\u0412\u044B\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u0434\u043B\u044F \u043A\u043E\u0440\u0440\u0435\u043A\u0446\u0438\u0438:"] -row 0 -column 0 -sticky w
 grid [ttk::entry $p.expr -width 12 -textvariable settings(tc.correction)] -row 0 -column 1 -sticky we
-grid [ttk::label $p.lexample -text "Пример: (x - 1.23) * 1.45"] -row 1 -column 1 -sticky w
+grid [ttk::label $p.lexample -text "\u041F\u0440\u0438\u043C\u0435\u0440: (x - 1.23) * 1.45"] -row 1 -column 1 -sticky w
 
 grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
 grid columnconfigure $p { 1 } -weight 1

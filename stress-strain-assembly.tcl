@@ -150,7 +150,7 @@ proc toggleProgControls {} {
 
 proc changeMeasureMethod {} {
 	set mode [measure::config::get measure.method 0]
-# TODO
+	tsv::set measure method $mode
 }
 
 proc makeMeasurement {} {
@@ -166,11 +166,11 @@ proc testTrm201Impl { trm btn } {
 	package require hardware::owen::trm201::modbus
 
 	terminateTester
-#	if { [catch {
+	if { [catch {
 		set res [::hardware::owen::trm201::modbus::test -com $settings(rs485.serialPort) -addr $settings(${trm}.addr) -baud $settings(${trm}.baud)]
-#	} ] } {
-#		set res 0
-#	}
+	} ] } {
+		set res 0
+	}
 	startTester
 
 	if { $res > 0 } {

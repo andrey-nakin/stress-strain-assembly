@@ -36,7 +36,8 @@ proc validateSettings {} {
 		lir1.zero 0
 		lir2.zero 0
 		lir2.coeff 1.0
-    }	
+    }
+	tsv::set measure method [measure::config::get measure.method 0]
 }
 
 proc calcGamma { phi1 phi1Err phi2 phi2Err } {
@@ -77,8 +78,13 @@ proc calcTau { phi2 phi2Err } {
 		set momentum $settings(dut.momentum)
 		set momentumErr $settings(dut.momentumErr)
 
-		set s [expr abs(sin($phi2))]
-		set sErr [measure::sigma::sin $phi2 $phi2Err]
+		if { [tsv::get measure method] == 0 } {
+			set s [expr abs(sin($phi2))]
+			set sErr [measure::sigma::sin $phi2 $phi2Err]
+		} else {
+			set s 1.0
+			set sErr 0.0
+		}
 
 		set a [expr 1.5 * $momentum * $s]
 		set aErr [measure::sigma::mul $momentum $momentumErr $s $sErr]

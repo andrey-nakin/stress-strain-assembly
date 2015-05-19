@@ -132,7 +132,7 @@ proc setup {} {
 
 # Завершаем работу установки, матчасть в исходное.
 proc finish {} {
-    global lir1 lir2 trm
+    global lir1 lir2 trm log
 
     if { [info exists lir1] } {
         # Переводим ЛИР-916 № 1 в исходное состояние

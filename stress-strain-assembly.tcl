@@ -216,7 +216,7 @@ proc testLir916 { lir btn } {
 }
 
 proc testAc4Impl { btn } {
-    global settings
+    global settings log
 
 	terminateTester
 	if { [catch {

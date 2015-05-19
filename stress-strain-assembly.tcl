@@ -69,6 +69,7 @@ proc stopMeasure {} {
      
 	$w.nb.m.ctl.stop configure -state disabled
 	$w.nb.m.ctl.measure configure -state disabled
+	$w.nb tab 3 -state normal
 	$w.nb tab 4 -state normal
 }
 
@@ -97,6 +98,7 @@ proc startMeasure {} {
 	}
 
 	$w.nb.m.ctl.start configure -state disabled
+	$w.nb tab 3 -state disabled
 	$w.nb tab 4 -state disabled
 
 	terminateTester
@@ -120,20 +122,10 @@ proc terminateMeasure {} {
 
 	$w.nb.m.ctl.stop configure -state disabled
 	$w.nb.m.ctl.measure configure -state disabled
+	$w.nb tab 3 -state normal
 	$w.nb tab 4 -state normal
 	
 	measure::interop::terminate
-}
-
-proc openResults {} {
-    global settings
-
-	if { [info exists settings(result.fileName)] } {
-	    set fn [::measure::datafile::parseFileName $settings(result.fileName)]
-	    if { [file exists $fn] } {
-    	    startfile::start $fn
-        }
-	}
 }
 
 proc quit {} {
@@ -173,11 +165,13 @@ proc testLir916Impl { lir btn } {
     global settings
 	package require hardware::skbis::lir916
 
+	terminateTester
 	if { [catch {
 		set res [::hardware::skbis::lir916::test -com $settings(rs485.serialPort) -addr $settings(${lir}.addr) -baud $settings(${lir}.baud)]
 	} ] } {
 		set res 0
 	}
+	startTester
 
 	if { $res > 0 } {
 		tk_messageBox -icon info -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u0421\u0432\u044F\u0437\u044C \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430"
@@ -194,6 +188,30 @@ proc testLir916 { lir btn } {
 	after 100 [list testLir916Impl $lir $btn]
 }
 
+proc testAc4Impl { btn } {
+    global settings
+
+	terminateTester
+	if { [catch {
+		set res [::measure::com::test $settings(rs485.serialPort)]
+	} ] } {
+		set res 0
+	}
+	startTester
+
+	if { $res } {
+		tk_messageBox -icon info -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u0421\u0432\u044F\u0437\u044C \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430"
+	} else {
+		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u041D\u0435\u0442 \u0441\u0432\u044F\u0437\u0438"
+	}
+    $btn configure -state enabled
+}
+
+proc testAc4 { btn } {
+    $btn configure -state disabled
+	after 100 [list testAc4Impl $btn]
+}
+
 proc setCoeff { coeff } {
 	global settings
 
@@ -204,17 +222,24 @@ proc setCoeff { coeff } {
 
 proc calibrateLir916 { lir btn } {
 
-	proc readAngle {} {
-		set lir2 [initLir lir2]
-		lassign [::hardware::skbis::lir916::readAngle $lir2 1] angle
-		::hardware::skbis::lir916::done $lir2
+	proc readAngle { btn } {
+		set angle ""
+		if { [catch {
+			set lir2 [initLir lir2]
+			lassign [::hardware::skbis::lir916::readAngle $lir2 1] angle
+			::hardware::skbis::lir916::done $lir2
+		}]} {
+			tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "Нет ответа от датчика угла поворота"
+			finish $btn
+		}
 		return $angle
 	}
 
-	proc step1 { p } {
+	proc step1 { p btn } {
 		global startAngle
 
-		set startAngle [readAngle]
+		set startAngle [readAngle $btn]
+		if { $startAngle == "" } return;
 
 		$p.lstep1 configure -state disabled
 		$p.step1 configure -state disabled
@@ -234,7 +259,9 @@ proc calibrateLir916 { lir btn } {
 		global startAngle numOfRounds
 
 		set pi 3.14159265358979323
-		set endAngle [readAngle]
+		set endAngle [readAngle $btn]
+		if { $endAngle == "" } return;
+
 		setCoeff [format %0.8g [expr (2.0 * $pi * $numOfRounds) / abs($endAngle - $startAngle)]]
 
 		finish $btn
@@ -258,7 +285,7 @@ proc calibrateLir916 { lir btn } {
 
 	set p [ttk::frame $w.c]
     grid [ttk::label $p.lstep1 -text "\u0428\u0430\u0433 1. \u0417\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u0443\u0439\u0442\u0435 \u0432\u0430\u043B, \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0451\u043D\u043D\u044B\u0439 \u043A \u0434\u0430\u0442\u0447\u0438\u043A\u0443 \u0443\u0433\u043B\u0430 \u2116 2, \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0414\u0430\u043B\u044C\u0448\u0435\u00BB"] -row 0 -column 0 -columnspan 2 -sticky w
-    grid [ttk::button $p.step1 -text "\u0414\u0430\u043B\u044C\u0448\u0435" -command [list step1 $p] ] -row 1 -column 1 -sticky e
+    grid [ttk::button $p.step1 -text "\u0414\u0430\u043B\u044C\u0448\u0435" -command [list step1 $p $btn] ] -row 1 -column 1 -sticky e
 
     grid [ttk::label $p.lstep2 -text "\u0428\u0430\u0433 2. \u041F\u0440\u043E\u0432\u0435\u0440\u043D\u0438\u0442\u0435 \u0432\u0430\u043B \u043D\u0430 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u0451\u043D\u043D\u043E\u0435 \u0447\u0438\u0441\u043B\u043E \u043E\u0431\u043E\u0440\u043E\u0442\u043E\u0432, \u0432\u043D\u043E\u0432\u044C \u0437\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u0443\u0439\u0442\u0435 \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0414\u0430\u043B\u044C\u0448\u0435\u00BB" -state disabled] -row 2 -column 0 -columnspan 2 -sticky w
     grid [ttk::button $p.step2 -text "\u0414\u0430\u043B\u044C\u0448\u0435" -command [list step2 $p] -state disabled] -row 3 -column 1 -sticky e
@@ -277,8 +304,12 @@ proc calibrateLir916 { lir btn } {
 proc resetAngles {} {
     global settings
 
-	set settings(lir1.zero) [::hardware::skbis::lir916::setZero $settings(lir1.addr)]
-	set settings(lir2.zero) [::hardware::skbis::lir916::setZero $settings(lir2.addr)]
+	if { [catch {
+		set settings(lir1.zero) [::hardware::skbis::lir916::setZero $settings(lir1.addr)]
+		set settings(lir2.zero) [::hardware::skbis::lir916::setZero $settings(lir2.addr)]
+	} err] } {
+		tk_messageBox -icon error -title "\u041E\u0448\u0438\u0431\u043A\u0430" -message $err
+	}
 }
 
 proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer gamma gammaErr tau tauErr write } {
@@ -490,8 +521,6 @@ grid [ttk::checkbutton $p.rewrite -variable settings(result.rewrite)] -row 3 -co
 grid [ttk::label $p.lcomment -text "\u041A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0439: " -anchor e] -row 4 -column 0 -sticky w
 grid [ttk::entry $p.comment -textvariable settings(result.comment)] -row 4 -column 1  -columnspan 4 -sticky we
 
-grid [ttk::button $p.open -text "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0444\u0430\u0439\u043B" -command openResults -image ::img::open -compound left] -row 5 -column 0 -columnspan 5 -sticky e
-
 grid columnconfigure $p {0 1 3 4} -pad 5
 grid columnconfigure $p { 2 } -weight 1
 grid rowconfigure $p { 0 1 2 3 4 } -pad 5
@@ -500,6 +529,7 @@ grid rowconfigure $p { 5 } -pad 10
 pack $p -fill x -padx 10 -pady 5
 
 # Device parameters tab
+
 ttk::frame $w.nb.tsetup
 $w.nb add $w.nb.tsetup -text " \u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432 "
 
@@ -507,9 +537,9 @@ set p [ttk::labelframe $w.nb.tsetup.rs485 -text " \u041F\u0440\u0435\u043E\u0431
 pack $p -fill x -padx 10 -pady 5
 
 grid [ttk::label $p.lrs485 -text "\u041F\u043E\u0441\u043b\u0435\u0434\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u043f\u043e\u0440\u0442:"] -row 0 -column 0 -sticky w
-grid [ttk::combobox $p.rs485 -width 10 -textvariable settings(rs485.serialPort) -values [measure::com::allPorts]] -row 0 -column 1 -sticky w
+grid [ttk::combobox $p.rs485 -width 20 -textvariable settings(rs485.serialPort) -values [measure::com::allPorts]] -row 0 -column 1 -sticky w
 
-grid [ttk::button $p.test -text "\u041E\u043F\u0440\u043E\u0441" -command [list ::measure::widget::testAc4 settings(rs485.serialPort) $p.test] ] -row 0 -column 2 -sticky e
+grid [ttk::button $p.test -text "\u041E\u043F\u0440\u043E\u0441" -command [list testAc4 $p.test] ] -row 0 -column 2 -sticky e
 
 grid columnconfigure $p { 0 1 2 } -pad 5
 grid columnconfigure $p { 2 } -weight 1

@@ -178,7 +178,7 @@ proc testTrm201Impl { trm btn } {
 	} elseif { $res == 0} {
 		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u041D\u0435\u0442 \u0441\u0432\u044F\u0437\u0438"
 	} else {
-		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "Устройство по указанному адресу не является ТРМ-201"
+		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u0423\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u043E \u043F\u043E \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u043E\u043C\u0443 \u0430\u0434\u0440\u0435\u0441\u0443 \u043D\u0435 \u044F\u0432\u043B\u044F\u0435\u0442\u0441\u044F \u0422\u0420\u041C-201"
 	}
     $btn configure -state enabled
 } 
@@ -205,7 +205,7 @@ proc testLir916Impl { lir btn } {
 	} elseif { $res == 0} {
 		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u041D\u0435\u0442 \u0441\u0432\u044F\u0437\u0438"
 	} else {
-		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "Устройство по указанному адресу не является ЛИР-916"
+		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u0423\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u043E \u043F\u043E \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u043E\u043C\u0443 \u0430\u0434\u0440\u0435\u0441\u0443 \u043D\u0435 \u044F\u0432\u043B\u044F\u0435\u0442\u0441\u044F \u041B\u0418\u0420-916"
 	}
     $btn configure -state enabled
 } 
@@ -256,7 +256,7 @@ proc calibrateLir916 { lir btn } {
 			lassign [::hardware::skbis::lir916::readAngle $lir2 1] angle
 			::hardware::skbis::lir916::done $lir2
 		}]} {
-			tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "Нет ответа от датчика угла поворота"
+			tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u041D\u0435\u0442 \u043E\u0442\u0432\u0435\u0442\u0430 \u043E\u0442 \u0434\u0430\u0442\u0447\u0438\u043A\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430"
 			finish $btn
 		}
 		return $angle

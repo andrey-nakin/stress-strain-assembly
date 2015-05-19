@@ -12,7 +12,7 @@ package require measure::thermocouple
 package require measure::listutils
 package require measure::math
 package require measure::sigma
-package require hardware::owen::trm201
+package require hardware::owen::trm201::modbus
 package require hardware::skbis::lir916
 
 # Число измерений, по которым определяется производная dT/dt
@@ -115,13 +115,11 @@ proc setup {} {
     set lir2 [initLir lir2]
 
     # Настраиваем ТРМ-201 для измерения температуры
-    set trm [::hardware::owen::trm201::init \
-		-protocol [measure::config::get trm1.protocol OWEN] \
+    set trm [::hardware::owen::trm201::modbus::init \
+		-com [measure::config::get -required rs485.serialPort] \
+		-addr [measure::config::get -required trm1.addr] \
 		-baud [measure::config::get trm1.baud 9600] \
-		[measure::config::get -required rs485.serialPort] \
-		[measure::config::get -required trm1.addr] \
 	]
-    # ::hardware::owen::trm201::setTcType $trm [measure::config::get tc.type] 
 }
 
 # Завершаем работу установки, матчасть в исходное.
@@ -142,7 +140,7 @@ proc finish {} {
 
     if { [info exists trm] } {
         # Переводим ТРМ-201 в исходное состояние
-        ::hardware::owen::trm201::done $trm
+        ::hardware::owen::trm201::modbus::done $trm
         unset trm
     }
 }
@@ -208,16 +206,9 @@ proc readTemp {} {
 
 # Снимаем показания вольтметра на термопаре и возвращаем температуру 
 # вместе с инструментальной погрешностью
-# !!!
-set TRM_T 293
 proc readTempTrm {} {
-	global	TRM_T
-	set TRM_T [expr $TRM_T + 0.02 * rand() - 0.0075]
-	return [list $TRM_T [expr $TRM_T * 0.001] ]
-	# !!!
-
     global trm
-    return [::hardware::owen::trm201::readTemperature $trm]
+    return [::hardware::owen::trm201::modbus::readTemperature $trm]
 }
 
 proc readAngles {} {

@@ -161,6 +161,33 @@ proc makeMeasurement {} {
 	}
 }
 
+proc testTrm201Impl { trm btn } {
+    global settings
+	package require hardware::owen::trm201::modbus
+
+	terminateTester
+#	if { [catch {
+		set res [::hardware::owen::trm201::modbus::test -com $settings(rs485.serialPort) -addr $settings(${trm}.addr) -baud $settings(${trm}.baud)]
+#	} ] } {
+#		set res 0
+#	}
+	startTester
+
+	if { $res > 0 } {
+		tk_messageBox -icon info -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u0421\u0432\u044F\u0437\u044C \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430"
+	} elseif { $res == 0} {
+		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u041D\u0435\u0442 \u0441\u0432\u044F\u0437\u0438"
+	} else {
+		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "Устройство по указанному адресу не является ТРМ-201"
+	}
+    $btn configure -state enabled
+} 
+
+proc testTrm201 { trm btn } {
+    $btn configure -state disabled
+	after 100 [list testTrm201Impl $trm $btn]
+}
+
 proc testLir916Impl { lir btn } {
     global settings
 	package require hardware::skbis::lir916
@@ -178,7 +205,7 @@ proc testLir916Impl { lir btn } {
 	} elseif { $res == 0} {
 		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u041D\u0435\u0442 \u0441\u0432\u044F\u0437\u0438"
 	} else {
-		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u423\u441\u442\u440\u43E\u439\u441\u442\u432\u43E \u43D\u435 \u44F\u432\u43B\u44F\u435\u442\u441\u44F \u438\u441\u442\u43E\u447\u43D\u438\u43A\u43E\u43C \u43F\u438\u442\u430\u43D\u438\u44F Agilent E3645A \u438\u43B\u438 \u430\u43D\u430\u43B\u43E\u433\u43E\u43C"
+		tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "Устройство по указанному адресу не является ЛИР-916"
 	}
     $btn configure -state enabled
 } 
@@ -554,10 +581,7 @@ grid [ttk::spinbox $p.netAddr -width 6 -textvariable settings(trm1.addr) -from 1
 grid [ttk::label $p.lbaud -text "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C, \u0431\u043E\u0434/\u0441:"] -row 0 -column 2 -sticky w
 grid [ttk::combobox $p.baud -width 8 -textvariable settings(trm1.baud) -state readonly -values {9600 19200 28800 38400 57600 76800}] -row 0 -column 3 -sticky w
 
-grid [ttk::label $p.lprotocol -text "\u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B \u043E\u0431\u043C\u0435\u043D\u0430:"] -row 0 -column 4 -sticky w
-grid [ttk::combobox $p.protocol -width 12 -textvariable settings(trm1.protocol) -state readonly -values {OWEN Modbus-RTU}] -row 0 -column 5 -sticky w
-
-grid [ttk::button $p.test -text "\u041E\u043F\u0440\u043E\u0441" -command [list ::measure::widget::testTrm201 settings(rs485.serialPort) settings(trm1.rs485Addr) $p.test] ] -row 0 -column 6 -sticky e
+grid [ttk::button $p.test -text "\u041E\u043F\u0440\u043E\u0441" -command [list testTrm201 trm1 $p.test] ] -row 0 -column 6 -sticky e
 
 grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
 grid columnconfigure $p { 6 } -weight 1

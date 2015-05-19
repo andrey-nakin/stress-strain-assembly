@@ -7,13 +7,13 @@
 
 package provide ssa::utils 1.0.0
 
-package require hardware::owen::mvu8
-package require measure::thermocouple
 package require measure::listutils
 package require measure::math
 package require measure::sigma
+package require measure::expr
 package require hardware::owen::trm201::modbus
 package require hardware::skbis::lir916
+package require Thread
 
 # Число измерений, по которым определяется производная dT/dt
 set DERIVATIVE_READINGS 10
@@ -29,13 +29,15 @@ proc validateSettings {} {
 		prog.time.step 1000
 		prog.temp.step 1.0
 
-		dut.rErr 0.0
-		dut.lengthErr 0.0
-		dut.momentumErr 0.0
+		dut.rErr	0.0
+		dut.lengthErr	0.0
+		dut.momentumErr	0.0
 
-		lir1.zero 0
-		lir2.zero 0
-		lir2.coeff 1.0
+		lir1.zero	0
+		lir2.zero	0
+		lir2.coeff	1.0
+
+		tc.correction	""
     }
 	tsv::set measure method [measure::config::get measure.method 0]
 }
@@ -55,7 +57,7 @@ proc calcGamma { phi1 phi1Err phi2 phi2Err } {
 		set phiDiff [expr abs($phi1 - $phi2)]
 		set phiDiffErr [measure::sigma::add $phi1Err $phi2Err]
 
-		set a [expr $r / $length]
+		set a [expr 1.0 * $r / $length]
 		set aErr [measure::sigma::div $r $rErr $length $lengthErr]
 
 		set res [expr $a * $phiDiff]
@@ -194,9 +196,13 @@ set startTime [clock milliseconds]
 
 # Измеряем температуру и возвращаем вместе с инструментальной погрешностью и производной
 proc readTemp {} {
-    global tempValues timeValues startTime DERIVATIVE_READINGS
+    global tempValues timeValues startTime DERIVATIVE_READINGS settings
     
     lassign [readTempTrm] t tErr
+
+	if { $settings(tc.correction) != "" } {
+		set t [measure::expr::eval $settings(tc.correction) $t]
+	}
 
     # накапливаем значения в очереди для вычисления производной 
     measure::listutils::lappend tempValues $t $DERIVATIVE_READINGS

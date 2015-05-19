@@ -354,7 +354,7 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer gamma gammaErr tau
 	set runtime(phi2) [::measure::format::valueWithErr -noScale -- $phi2 $phi2Err ""]
 	set runtime(gamma) [::measure::format::valueWithErr -noScale -- $gamma $gammaErr ""]
 	set runtime(tau) [::measure::format::valueWithErr -noScale -mult 1.0e-6 -- $tau $tauErr ""]
-	set runtime(temperature) [::measure::format::valueWithErr -- $temp $tempErr ""]
+	set runtime(temperature) [::measure::format::valueWithErr -noScale -- $temp $tempErr ""]
 
     measure::chart::${chartT_t}::addPoint $temp
 
@@ -578,12 +578,13 @@ pack $p -fill x -padx 10 -pady 5
 grid [ttk::label $p.lnetAddr -text "\u0421\u0435\u0442\u0435\u0432\u043E\u0439 \u0430\u0434\u0440\u0435\u0441:"] -row 0 -column 0 -sticky w
 grid [ttk::spinbox $p.netAddr -width 6 -textvariable settings(trm1.addr) -from 1 -to 2040 -validate key -validatecommand {string is integer %P}] -row 0 -column 1 -sticky w
 
-grid [ttk::label $p.lbaud -text "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C, \u0431\u043E\u0434/\u0441:"] -row 0 -column 2 -sticky w
-grid [ttk::combobox $p.baud -width 8 -textvariable settings(trm1.baud) -state readonly -values {9600 19200 28800 38400 57600 76800}] -row 0 -column 3 -sticky w
+grid [ttk::label $p.lbaud -text "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C, \u0431\u043E\u0434/\u0441:"] -row 0 -column 3 -sticky w
+grid [ttk::combobox $p.baud -width 8 -textvariable settings(trm1.baud) -state readonly -values {9600 19200 28800 38400 57600 76800}] -row 0 -column 4 -sticky w
 
 grid [ttk::button $p.test -text "\u041E\u043F\u0440\u043E\u0441" -command [list testTrm201 trm1 $p.test] ] -row 0 -column 6 -sticky e
 
 grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
+grid columnconfigure $p { 2 } -minsize 20
 grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
@@ -593,12 +594,13 @@ pack $p -fill x -padx 10 -pady 5
 grid [ttk::label $p.lnetAddr -text "\u0421\u0435\u0442\u0435\u0432\u043E\u0439 \u0430\u0434\u0440\u0435\u0441:"] -row 0 -column 0 -sticky w
 grid [ttk::spinbox $p.netAddr -width 6 -textvariable settings(lir1.addr) -from 1 -to 2040 -validate key -validatecommand {string is integer %P}] -row 0 -column 1 -sticky w
 
-grid [ttk::label $p.lbaud -text "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C, \u0431\u043E\u0434/\u0441:"] -row 0 -column 2 -sticky w
-grid [ttk::combobox $p.baud -width 8 -textvariable settings(lir1.baud) -state readonly -values {9600 19200 28800 38400 57600 76800}] -row 0 -column 3 -sticky w
+grid [ttk::label $p.lbaud -text "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C, \u0431\u043E\u0434/\u0441:"] -row 0 -column 3 -sticky w
+grid [ttk::combobox $p.baud -width 8 -textvariable settings(lir1.baud) -state readonly -values {9600 19200 28800 38400 57600 76800}] -row 0 -column 4 -sticky w
 
 grid [ttk::button $p.test -text "\u041E\u043F\u0440\u043E\u0441" -command [list testLir916 lir1 $p.test] ] -row 0 -column 6 -sticky e
 
 grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
+grid columnconfigure $p { 2 } -minsize 20
 grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
@@ -608,20 +610,24 @@ pack $p -fill x -padx 10 -pady 5
 grid [ttk::label $p.lnetAddr -text "\u0421\u0435\u0442\u0435\u0432\u043E\u0439 \u0430\u0434\u0440\u0435\u0441:"] -row 0 -column 0 -sticky w
 grid [ttk::spinbox $p.netAddr -width 6 -textvariable settings(lir2.addr) -from 1 -to 2040 -validate key -validatecommand {string is integer %P}] -row 0 -column 1 -sticky w
 
-grid [ttk::label $p.lbaud -text "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C, \u0431\u043E\u0434/\u0441:"] -row 0 -column 2 -sticky w
-grid [ttk::combobox $p.baud -width 8 -textvariable settings(lir2.baud) -state readonly -values {9600 19200 28800 38400 57600 76800}] -row 0 -column 3 -sticky w
+grid [ttk::label $p.lbaud -text "\u0421\u043A\u043E\u0440\u043E\u0441\u0442\u044C, \u0431\u043E\u0434/\u0441:"] -row 0 -column 3 -sticky w
+grid [ttk::combobox $p.baud -width 8 -textvariable settings(lir2.baud) -state readonly -values {9600 19200 28800 38400 57600 76800}] -row 0 -column 4 -sticky w
 
 grid [ttk::button $p.test -text "\u041E\u043F\u0440\u043E\u0441" -command [list testLir916 lir2 $p.test] ] -row 0 -column 6 -sticky e
 
 grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
+grid columnconfigure $p { 2 } -minsize 20
 grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
+##################
 # Calibration tab
+##################
 ttk::frame $w.nb.cal
 $w.nb add $w.nb.cal -text " \u041A\u0430\u043B\u0438\u0431\u0440\u043E\u0432\u043A\u0430 \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432 "
 
-set p [ttk::labelframe $w.nb.cal.lir -text " \u041B\u0418\u0420-916" -pad 10]
+# LIR-916
+set p [ttk::labelframe $w.nb.cal.lir -text " \u041B\u0418\u0420-916 " -pad 10]
 pack $p -fill x -padx 10 -pady 5
 
 grid [ttk::label $p.lcoeff -text "\u041A\u043E\u044D\u0444\u0444\u0438\u0446\u0438\u0435\u043D\u0442 \u043F\u0435\u0440\u0435\u0441\u0447\u0451\u0442\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430:"] -row 0 -column 0 -sticky w
@@ -631,6 +637,18 @@ grid [ttk::button $p.test -text "\u041E\u043F\u0440\u0435\u0434\u0435\u043B\u043
 
 grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
 grid columnconfigure $p { 6 } -weight 1
+grid rowconfigure $p { 0 1 } -pad 5
+
+# Thermocouple
+set p [ttk::labelframe $w.nb.cal.tc -text " Термопара " -pad 10]
+pack $p -fill x -padx 10 -pady 5
+
+grid [ttk::label $p.lexpr -text "Выражение для коррекции:"] -row 0 -column 0 -sticky w
+grid [ttk::entry $p.expr -width 12 -textvariable settings(tc.correction)] -row 0 -column 1 -sticky we
+grid [ttk::label $p.lexample -text "Пример: (x - 1.23) * 1.45"] -row 1 -column 1 -sticky w
+
+grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
+grid columnconfigure $p { 1 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
 # botton panel

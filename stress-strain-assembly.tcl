@@ -5,7 +5,7 @@
 # Main module
 ###############################################################################
 
-package provide app-stress-strain-assembly 1.0.0
+package provide app-stress-strain-assembly 1.0.1
 
 package require Tcl 8.5
 package require Tk 8.5
@@ -417,10 +417,10 @@ grid [ttk::entry $p.ev -textvariable runtime(phi2) -state readonly] -row 0 -colu
 
 grid [ttk::button $p.reset -text "\u041E\u0431\u043D\u0443\u043B\u0438\u0442\u044C \u0443\u0433\u043B\u044B" -command [list resetAngles] ] -row 0 -column 6 -columnspan 2 -sticky e
 
-grid [ttk::label $p.lt -text "\u041D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u0435 \u03B3, %:"] -row 1 -column 0 -sticky w
+grid [ttk::label $p.lt -text "\u0414\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u03B3, %:"] -row 1 -column 0 -sticky w
 grid [ttk::entry $p.et -textvariable runtime(gamma) -state readonly] -row 1 -column 1 -sticky we
 
-grid [ttk::label $p.lder -text "\u0414\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u03C4, \u041C\u041F\u0430:"] -row 1 -column 3 -sticky w
+grid [ttk::label $p.lder -text "\u041D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u0435 \u03C4, \u041C\u041F\u0430:"] -row 1 -column 3 -sticky w
 grid [ttk::entry $p.eder -textvariable runtime(tau) -state readonly] -row 1 -column 4 -sticky we
 
 grid [ttk::label $p.lr -text "T, \u041A:"] -row 1 -column 6 -sticky w
@@ -440,7 +440,7 @@ measure::chart::movingChart -ylabel "T, \u041A" -linearTrend $chartT_t
 
 set chartTau_gamma [canvas $p.r_T -width 200 -height 200]
 grid $chartTau_gamma -row 0 -column 1 -sticky news
-measure::chart::staticChart -xlabel "\u041D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u0435 \u03B3, %" -ylabel "\u03C4, \u041C\u041F\u0430" -dots 1 -lines 1 $chartTau_gamma
+measure::chart::staticChart -xlabel "\u0414\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u03B3, %" -ylabel "\u03C4, \u041C\u041F\u0430" -dots 1 -lines 1 $chartTau_gamma
 measure::chart::${chartTau_gamma}::series test -order 1 -maxCount 10 -color #7f7fff
 measure::chart::${chartTau_gamma}::series result -order 2 -maxCount 200 -thinout -color green
 

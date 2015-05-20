@@ -1,11 +1,11 @@
 #!/usr/bin/tclsh
 
 ###############################################################################
-# Измерительная установка № 001
-# Процедуры общего назначения
+# Stress & strain measurement assembly
+# Common utils
 ###############################################################################
 
-package provide ssa::utils 1.0.0
+package provide ssa::utils 1.0.1
 
 package require measure::listutils
 package require measure::math
@@ -54,7 +54,7 @@ proc calcGamma { phi1 phi1Err phi2 phi2Err } {
 		set length $settings(dut.length)
 		set lengthErr $settings(dut.lengthErr)
 
-		set phiDiff [expr abs($phi1 - $phi2)]
+		set phiDiff [expr $phi1 - $phi2]
 		set phiDiffErr [measure::sigma::add $phi1Err $phi2Err]
 
 		set a [expr 1.0 * $r / $length]
@@ -81,7 +81,7 @@ proc calcTau { phi2 phi2Err } {
 		set momentumErr $settings(dut.momentumErr)
 
 		if { [tsv::get measure method] == 0 } {
-			set s [expr abs(sin($phi2))]
+			set s [expr sin($phi2)]
 			set sErr [measure::sigma::sin $phi2 $phi2Err]
 		} else {
 			set s 1.0

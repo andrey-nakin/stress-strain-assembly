@@ -1,11 +1,11 @@
 #!/usr/bin/tclsh
 
 ###############################################################################
-# Измерительная установка № 001
-# Измерительный модуль
+# Stress & strain measurement assembly
+# Measurement module
 ###############################################################################
 
-package provide ssa::measure 1.0.0
+package provide ssa::measure 1.0.1
 
 package require math::statistics
 package require measure::logger
@@ -57,12 +57,8 @@ proc runTimeStep {} {
 set tempDerValues {}
 
 proc runTempStep {} {
-    global doMeasurement tempDerValues scpi::commandDelays tcmm
+    global doMeasurement tempDerValues tcmm
     global log
-    
-    if { [info exists tcmm] } {
-        set scpi::commandDelays($tcmm) 0.0
-    }
     
     set step [measure::config::get prog.temp.step 1.0]
     lassign [readTemp] temp tempErr

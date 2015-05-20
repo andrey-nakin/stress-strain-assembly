@@ -249,23 +249,23 @@ proc setCoeff { coeff } {
 
 proc calibrateLir916 { lir btn } {
 
-	proc readAngle { btn } {
+	proc readAngle { lir btn } {
 		set angle ""
 		if { [catch {
-			set lir2 [initLir lir2]
-			lassign [::hardware::skbis::lir916::readAngle $lir2 1] angle
-			::hardware::skbis::lir916::done $lir2
-		}]} {
-			tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u041D\u0435\u0442 \u043E\u0442\u0432\u0435\u0442\u0430 \u043E\u0442 \u0434\u0430\u0442\u0447\u0438\u043A\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430"
+			set desc [initLir $lir]
+			lassign [::hardware::skbis::lir916::readAngle $desc 1] angle
+			::hardware::skbis::lir916::done $desc
+		} err]} {
+			tk_messageBox -icon error -type ok -title "\u041E\u043F\u0440\u043E\u0441" -parent . -message "\u041D\u0435\u0442 \u043E\u0442\u0432\u0435\u0442\u0430 \u043E\u0442 \u0434\u0430\u0442\u0447\u0438\u043A\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430: $err"
 			finish $btn
 		}
 		return $angle
 	}
 
-	proc step1 { p btn } {
+	proc step1 { lir p btn } {
 		global startAngle
 
-		set startAngle [readAngle $btn]
+		set startAngle [readAngle $lir $btn]
 		if { $startAngle == "" } return;
 
 		$p.lstep1 configure -state disabled
@@ -282,11 +282,11 @@ proc calibrateLir916 { lir btn } {
 		$p.save configure -state enabled
 	}
 
-	proc step3 { p btn } {
+	proc step3 { lir p btn } {
 		global startAngle numOfRounds
 
 		set pi 3.14159265358979323
-		set endAngle [readAngle $btn]
+		set endAngle [readAngle $lir $btn]
 		if { $endAngle == "" } return;
 
 		setCoeff [format %0.8g [expr (2.0 * $pi * $numOfRounds) / abs($endAngle - $startAngle)]]
@@ -311,8 +311,8 @@ proc calibrateLir916 { lir btn } {
 	wm attributes $w -topmost 1
 
 	set p [ttk::frame $w.c]
-    grid [ttk::label $p.lstep1 -text "\u0428\u0430\u0433 1. \u0417\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u0443\u0439\u0442\u0435 \u0432\u0430\u043B, \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0451\u043D\u043D\u044B\u0439 \u043A \u0434\u0430\u0442\u0447\u0438\u043A\u0443 \u0443\u0433\u043B\u0430 \u2116 2, \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0414\u0430\u043B\u044C\u0448\u0435\u00BB"] -row 0 -column 0 -columnspan 2 -sticky w
-    grid [ttk::button $p.step1 -text "\u0414\u0430\u043B\u044C\u0448\u0435" -command [list step1 $p $btn] ] -row 1 -column 1 -sticky e
+    grid [ttk::label $p.lstep1 -text "\u0428\u0430\u0433 1. \u0417\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u0443\u0439\u0442\u0435 \u0432\u0430\u043B, \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0451\u043D\u043D\u044B\u0439 \u043A \u0434\u0430\u0442\u0447\u0438\u043A\u0443 \u0443\u0433\u043B\u0430, \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0414\u0430\u043B\u044C\u0448\u0435\u00BB"] -row 0 -column 0 -columnspan 2 -sticky w
+    grid [ttk::button $p.step1 -text "\u0414\u0430\u043B\u044C\u0448\u0435" -command [list step1 $lir $p $btn] ] -row 1 -column 1 -sticky e
 
     grid [ttk::label $p.lstep2 -text "\u0428\u0430\u0433 2. \u041F\u0440\u043E\u0432\u0435\u0440\u043D\u0438\u0442\u0435 \u0432\u0430\u043B \u043D\u0430 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u0451\u043D\u043D\u043E\u0435 \u0447\u0438\u0441\u043B\u043E \u043E\u0431\u043E\u0440\u043E\u0442\u043E\u0432, \u0432\u043D\u043E\u0432\u044C \u0437\u0430\u0444\u0438\u043A\u0441\u0438\u0440\u0443\u0439\u0442\u0435 \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0414\u0430\u043B\u044C\u0448\u0435\u00BB" -state disabled] -row 2 -column 0 -columnspan 2 -sticky w
     grid [ttk::button $p.step2 -text "\u0414\u0430\u043B\u044C\u0448\u0435" -command [list step2 $p] -state disabled] -row 3 -column 1 -sticky e
@@ -320,7 +320,7 @@ proc calibrateLir916 { lir btn } {
     grid [ttk::label $p.lstep3 -text "\u0428\u0430\u0433 3. \u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0447\u0438\u0441\u043B\u043E \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u043E\u0432 \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \u043A\u043D\u043E\u043F\u043A\u0443 \u00AB\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C\u00BB" -state disabled] -row 4 -column 0 -columnspan 2 -sticky w
 
     grid [ttk::spinbox $p.numOfRounds -width 15 -textvariable numOfRounds -from 0 -to 1000 -increment 1 -validate key -validatecommand {string is double %P} -state disabled] -row 5 -column 0 -sticky e
-    grid [ttk::button $p.save -text "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C" -command [list step3 $p $btn] -state disabled] -row 5 -column 1 -sticky e
+    grid [ttk::button $p.save -text "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C" -command [list step3 $lir $p $btn] -state disabled] -row 5 -column 1 -sticky e
 
 	grid columnconfigure $p { 0 1 } -pad 5
 	grid columnconfigure $p { 0 } -weight 1
@@ -626,8 +626,21 @@ grid rowconfigure $p { 0 1 } -pad 5
 ttk::frame $w.nb.cal
 $w.nb add $w.nb.cal -text " \u041A\u0430\u043B\u0438\u0431\u0440\u043E\u0432\u043A\u0430 \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432 "
 
-# LIR-916
-set p [ttk::labelframe $w.nb.cal.lir -text " \u041B\u0418\u0420-916 " -pad 10]
+# AD #1
+set p [ttk::labelframe $w.nb.cal.ad1 -text " Датчик угла поворота № 1 " -pad 10]
+pack $p -fill x -padx 10 -pady 5
+
+grid [ttk::label $p.lcoeff -text "\u041A\u043E\u044D\u0444\u0444\u0438\u0446\u0438\u0435\u043D\u0442 \u043F\u0435\u0440\u0435\u0441\u0447\u0451\u0442\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430:"] -row 0 -column 0 -sticky w
+grid [ttk::spinbox $p.coeff -width 12 -textvariable settings(lir1.coeff) -from 0.001 -to 1000 -validate key -validatecommand {string is double %P}] -row 0 -column 1 -sticky w
+
+grid [ttk::button $p.test -text "\u041E\u043F\u0440\u0435\u0434\u0435\u043B\u0438\u0442\u044C \u043A\u043E\u044D\u0444\u0444\u0438\u0446\u0438\u0435\u043D\u0442" -command [list calibrateLir916 lir1 $p.test] ] -row 0 -column 6 -sticky e
+
+grid columnconfigure $p { 0 1 2 3 4 5 6 } -pad 5
+grid columnconfigure $p { 6 } -weight 1
+grid rowconfigure $p { 0 1 } -pad 5
+
+# AD #2
+set p [ttk::labelframe $w.nb.cal.ad2 -text " Датчик угла поворота № 2 " -pad 10]
 pack $p -fill x -padx 10 -pady 5
 
 grid [ttk::label $p.lcoeff -text "\u041A\u043E\u044D\u0444\u0444\u0438\u0446\u0438\u0435\u043D\u0442 \u043F\u0435\u0440\u0435\u0441\u0447\u0451\u0442\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430:"] -row 0 -column 0 -sticky w

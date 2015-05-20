@@ -35,6 +35,7 @@ proc validateSettings {} {
 
 		lir1.zero	0
 		lir2.zero	0
+		lir1.coeff	1.0
 		lir2.coeff	1.0
 
 		tc.correction	""
@@ -110,7 +111,7 @@ proc initLir { key } {
 		-addr [measure::config::get -required ${key}.addr] \
 		-baud [measure::config::get ${key}.baud 9600] \
 		-zero [measure::config::get ${key}.zero 0] \
-		-coeff [measure::config::get lir2.coeff 1.0] \
+		-coeff [measure::config::get ${key}.coeff 1.0] \
 	]
 }
 

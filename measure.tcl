@@ -57,7 +57,7 @@ proc runTimeStep {} {
 set tempDerValues {}
 
 proc runTempStep {} {
-    global doMeasurement tempDerValues tcmm
+    global doMeasurement tempDerValues
     global log
     
     set step [measure::config::get prog.temp.step 1.0]

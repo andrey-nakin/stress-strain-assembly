@@ -627,7 +627,7 @@ ttk::frame $w.nb.cal
 $w.nb add $w.nb.cal -text " \u041A\u0430\u043B\u0438\u0431\u0440\u043E\u0432\u043A\u0430 \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432 "
 
 # AD #1
-set p [ttk::labelframe $w.nb.cal.ad1 -text " Датчик угла поворота № 1 " -pad 10]
+set p [ttk::labelframe $w.nb.cal.ad1 -text " \u0414\u0430\u0442\u0447\u0438\u043A \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430 \u2116 1 " -pad 10]
 pack $p -fill x -padx 10 -pady 5
 
 grid [ttk::label $p.lcoeff -text "\u041A\u043E\u044D\u0444\u0444\u0438\u0446\u0438\u0435\u043D\u0442 \u043F\u0435\u0440\u0435\u0441\u0447\u0451\u0442\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430:"] -row 0 -column 0 -sticky w
@@ -640,7 +640,7 @@ grid columnconfigure $p { 6 } -weight 1
 grid rowconfigure $p { 0 1 } -pad 5
 
 # AD #2
-set p [ttk::labelframe $w.nb.cal.ad2 -text " Датчик угла поворота № 2 " -pad 10]
+set p [ttk::labelframe $w.nb.cal.ad2 -text " \u0414\u0430\u0442\u0447\u0438\u043A \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430 \u2116 2 " -pad 10]
 pack $p -fill x -padx 10 -pady 5
 
 grid [ttk::label $p.lcoeff -text "\u041A\u043E\u044D\u0444\u0444\u0438\u0446\u0438\u0435\u043D\u0442 \u043F\u0435\u0440\u0435\u0441\u0447\u0451\u0442\u0430 \u0443\u0433\u043B\u0430 \u043F\u043E\u0432\u043E\u0440\u043E\u0442\u0430:"] -row 0 -column 0 -sticky w

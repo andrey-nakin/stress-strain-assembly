@@ -6,7 +6,7 @@ all:	dist
 
 manual:
 	m4 --define=APP_VERSION=$(APP_VERSION) doc/title.tex.m4 > doc/title.tex
-#	cd doc; pdflatex manual.tex
+	cd doc; pdflatex manual.tex
 	cd doc; pdflatex release-notes.tex
 
 kit:
@@ -19,4 +19,5 @@ dist: exe manual
 	rm -f stress-strain-assembly-$(APP_VERSION).zip
 	zip -j stress-strain-assembly-$(APP_VERSION).zip starkit/stress-strain-assembly.exe
 	zip -j stress-strain-assembly-$(APP_VERSION).zip doc/release-notes.pdf
+	zip -j stress-strain-assembly-$(APP_VERSION).zip doc/manual.pdf
 

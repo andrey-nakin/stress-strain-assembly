@@ -15,9 +15,13 @@ kit:
 exe:
 	cd starkit; $(LINUX_RUNTIME) sdx.kit wrap stress-strain-assembly.exe -runtime $(WINDOWS_RUNTIME)
 
-dist: exe manual
+dist: kit exe manual
 	rm -f stress-strain-assembly-$(APP_VERSION).zip
-	zip -j stress-strain-assembly-$(APP_VERSION).zip starkit/stress-strain-assembly.exe
+	zip -j stress-strain-assembly-$(APP_VERSION).zip starkit/stress-strain-assembly.kit
 	zip -j stress-strain-assembly-$(APP_VERSION).zip doc/release-notes.pdf
 	zip -j stress-strain-assembly-$(APP_VERSION).zip doc/manual.pdf
+	rm -f stress-strain-assembly-$(APP_VERSION)-win32.zip
+	zip -j stress-strain-assembly-$(APP_VERSION)-win32.zip starkit/stress-strain-assembly.exe
+	zip -j stress-strain-assembly-$(APP_VERSION)-win32.zip doc/release-notes.pdf
+	zip -j stress-strain-assembly-$(APP_VERSION)-win32.zip doc/manual.pdf
 

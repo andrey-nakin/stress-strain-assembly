@@ -5,7 +5,7 @@
 # Main module
 ###############################################################################
 
-package provide app-stress-strain-assembly 1.0.1
+package provide app-stress-strain-assembly 1.0.2
 
 package require Tcl 8.5
 package require Tk 8.5

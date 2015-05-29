@@ -239,12 +239,11 @@ proc testAc4 { btn } {
 	after 100 [list testAc4Impl $btn]
 }
 
-proc setCoeff { coeff } {
+proc setCoeff { lir coeff } {
 	global settings
 
-	set settings(lir2.coeff) $coeff
-	::hardware::skbis::lir916::setCoeff $settings(lir1.addr) $coeff
-	::hardware::skbis::lir916::setCoeff $settings(lir2.addr) $coeff
+	set settings(${lir}.coeff) $coeff
+	::hardware::skbis::lir916::setCoeff $settings(${lir}.addr) $coeff
 }
 
 proc calibrateLir916 { lir btn } {
@@ -289,7 +288,7 @@ proc calibrateLir916 { lir btn } {
 		set endAngle [readAngle $lir $btn]
 		if { $endAngle == "" } return;
 
-		setCoeff [format %0.8g [expr (2.0 * $pi * $numOfRounds) / abs($endAngle - $startAngle)]]
+		setCoeff $lir [format %0.8g [expr (2.0 * $pi * $numOfRounds) / ($endAngle - $startAngle)]]
 
 		finish $btn
 	}

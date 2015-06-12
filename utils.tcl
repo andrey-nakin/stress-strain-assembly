@@ -5,7 +5,8 @@
 # Common utils
 ###############################################################################
 
-package provide ssa::utils 1.0.1
+package provide ssa::utils 1.1.0
+namespace eval ssa { }
 
 package require measure::listutils
 package require measure::math
@@ -15,8 +16,44 @@ package require hardware::owen::trm201::modbus
 package require hardware::skbis::lir916
 package require Thread
 
+###############################################################################
+# Global constants & variables
+###############################################################################
+
+# list of event variable labels
+set ssa::EVENT_WHAT { "\u03C61 (\u0433\u0440\u0430\u0434)" "\u03C62 (\u0433\u0440\u0430\u0434)" "\u0414\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u03B3 (%)" "\u041D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u0435 \u03C4 (\u041C\u041F\u0430)"  "\u0422\u0435\u043C\u043F\u0435\u0440\u0430\u0442\u0443\u0440\u0430 (\u041A)" }
+
+# list of event variable names
+set ssa::EVENT_VAR { phi1 phi2 gamma tau temp }
+
+# list of event criteria
+set ssa::EVENT_RELATION { "\u0411\u043E\u043B\u044C\u0448\u0435, \u0447\u0435\u043C" "\u041C\u0435\u043D\u044C\u0448\u0435, \u0447\u0435\u043C" }
+
+# list of event criteria expressions
+set ssa::EVENT_RELATION_EXPR { ">=" "<=" }
+
+# list of event sounds
+set ssa::EVENT_SOUND { Asterisk Exclamation Exit Hand Question Start }
+
+# max number of events
+set ssa::MAX_EVENTS 10
+
+# true when thread is working in measurement mode
+set ssa::isMeasurement 0
+
+###############################################################################
+# Package-private constants & variables
+###############################################################################
+
 # Число измерений, по которым определяется производная dT/dt
 set DERIVATIVE_READINGS 10
+
+# Prev variable values
+array set prevValues {}
+
+###############################################################################
+# Utility procedures
+###############################################################################
 
 # Процедура проверяет правильность настроек, при необходимости вносит поправки
 proc validateSettings {} {
@@ -159,30 +196,38 @@ proc rad2grad { v } {
 }
 
 proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer { write 0 } } {
-	global settings
+	global settings ssa::isMeasurement
 
-	# рассчитываем деформацию
+	# calc gamma
 	lassign [calcGamma $phi1 $phi1Err $phi2 $phi2Err] gamma gammaErr
 
-	# рассчитываем напряжение
+	# calc tau
 	lassign [calcTau $phi2 $phi2Err] tau tauErr
 
 	if { $write } {
 		writeDataPoint $settings(result.fileName) $temp $tempErr $tempDer $phi1 $phi1Err $phi2 $phi2Err $gamma $gammaErr $tau $tauErr 0
 	}
 
-	# переводим углы из радиан в градусы        
+	# convert angles to degrees
 	set phi1 [rad2grad $phi1]
 	set phi1Err [rad2grad $phi1Err]
 	set phi2 [rad2grad $phi2]
 	set phi2Err [rad2grad $phi2Err]
+
+	# convert tau to MPa
+	set tau [expr 1.0e-6 * $tau]
+	set tauErr [expr 1.0e-6 * $tauErr]
+
+#!!!	if { $ssa::isMeasurement } {
+		trackEvents $phi1 $phi2 $gamma $tau $temp
+#	}
 
 	if { [measure::interop::isAlone] } {
 	    # Выводим результаты в консоль
 		set phi1v [::measure::format::valueWithErr -noScale -- $phi1 $phi1Err "°"]
 		set phi2v [::measure::format::valueWithErr -noScale -- $phi2 $phi2Err "°"]
 		set gammav [::measure::format::valueWithErr -noScale -- $gamma $gammaErr "%%"]
-		set tauv [::measure::format::valueWithErr -- $tau $tauErr "Па"]
+		set tauv [::measure::format::valueWithErr -noScale -- $tau $tauErr "МПа"]
     	set tv [::measure::format::valueWithErr $temp $tempErr K]
     	puts "φ1=$phi1v\tφ2=$phi2v\tγ=$gammav\tτ=$tauv\tT=$tv"
 	} else {
@@ -220,6 +265,9 @@ proc readTemp {} {
 # Снимаем показания вольтметра на термопаре и возвращаем температуру 
 # вместе с инструментальной погрешностью
 proc readTempTrm {} {
+#!!!
+	return [list [expr 0.1 * ([clock seconds] % 10000)] 0.1]
+#!!!
     global trm
     return [::hardware::owen::trm201::modbus::readTemperature $trm]
 }
@@ -250,5 +298,69 @@ proc writeDataPoint { fn temp tempErr tempDer phi1 phi1Err phi2 phi2Err gamma ga
         [format %0.6g $tau] [format %0.2g $tauErr]    \
         $manual	\
 	]
+}
+
+proc prepareEvents {} {
+	global settings ssa::MAX_EVENTS ssa::EVENT_VAR ssa::EVENT_RELATION_EXPR
+
+	set result ""
+
+	for { set i 0 } { $i < $ssa::MAX_EVENTS } { incr i } {
+		set var "event.${i}"
+
+		if { ![info exists settings(${var}.enabled)] || !$settings(${var}.enabled) } {
+			# event is not enabled
+			continue
+		}
+
+		if { ![info exists settings(${var}.what)] || ![info exists settings(${var}.relation)] || ![info exists settings(${var}.value)] || ![info exists settings(${var}.sound)]} {
+			# event is not fully specified
+			continue
+		}
+
+		set what $settings(${var}.what)
+		if { $what < 0 || $what >= [llength $ssa::EVENT_VAR] } {
+			# <what> is invalid
+			continue
+		}
+		set what [lindex $ssa::EVENT_VAR $what]
+
+		set relation $settings(${var}.relation)
+		if { $relation < 0 || $relation >= [llength $ssa::EVENT_RELATION_EXPR] } {
+			# <relation> is invalid
+			continue
+		}
+		set relation [lindex $ssa::EVENT_RELATION_EXPR $relation]
+
+		set value $settings(${var}.value)
+		if { ![string is double $value] } {
+			# <value> is invalid
+			continue
+		}
+
+		append result "if {(\$$what $relation $value) && (!\[info exists prevValues($what)\] || !(\$prevValues($what) $relation $value))} {set sound \"$settings(${var}.sound)\"}\nset prevValues($what) \$$what\n"
+	}
+
+	return $result
+}
+
+proc play_sound { sound } {
+	package require twapi
+	twapi::play_sound "System${sound}" -alias -async
+}
+
+# track events depending on variable values
+proc trackEvents { phi1 phi2 gamma tau temp } {
+	global _prepared_events_ prevValues
+
+	if { ![info exists _prepared_events_] } {
+		set _prepared_events_ [prepareEvents]
+	}
+
+	set sound ""
+	eval $_prepared_events_
+	if { $sound != "" } {
+		catch { play_sound $sound }
+	}
 }
 

@@ -5,7 +5,7 @@
 # Measurement module
 ###############################################################################
 
-package provide ssa::measure 1.0.1
+package provide ssa::measure 1.1.0
 
 package require math::statistics
 package require measure::logger
@@ -16,6 +16,8 @@ package require measure::ranges
 package require measure::measure
 package require measure::listutils
 
+package require ssa::utils 1.1.0
+
 ###############################################################################
 # Константы
 ###############################################################################
@@ -24,9 +26,6 @@ package require measure::listutils
 # Подпрограммы
 ###############################################################################
 
-# Подгружаем модель с процедурами общего назначения
-source [file join [file dirname [info script]] utils.tcl]
-                   
 # Производит регистрацию данных по заданному временному шагу
 proc runTimeStep {} {
     global doMeasurement
@@ -146,6 +145,9 @@ proc makeMeasurement {} {
 ###############################################################################
 # Начало работы
 ###############################################################################
+
+# declare measurement thread
+set ssa::isMeasurement 1
 
 # Инициализируем протоколирование
 set log [measure::logger::init measure]

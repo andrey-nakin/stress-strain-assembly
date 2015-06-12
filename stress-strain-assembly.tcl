@@ -28,16 +28,7 @@ package require startfile
 package require measure::widget::fullscreen
 package require hardware::skbis::lir916
 
-package require ssa::utils
-
-###############################################################################
-# Constants & global variables
-###############################################################################
-
-set EVENT_WHAT { "\u03C61 (\u0433\u0440\u0430\u0434)" "\u03C62 (\u0433\u0440\u0430\u0434)" "\u0414\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u03B3 (%)" "\u041D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u0435 \u03C4 (\u041C\u041F\u0430)"  "\u0422\u0435\u043C\u043F\u0435\u0440\u0430\u0442\u0443\u0440\u0430 (\u041A)" }
-set EVENT_RELATION { "\u0411\u043E\u043B\u044C\u0448\u0435, \u0447\u0435\u043C" "\u041C\u0435\u043D\u044C\u0448\u0435, \u0447\u0435\u043C" }
-set EVENT_SOUND { Asterisk Exclamation Exit Hand Question Start }
-set MAX_EVENTS 10
+package require ssa::utils 1.1.0
 
 ###############################################################################
 # Utility functions
@@ -366,12 +357,11 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer gamma gammaErr tau
 	set runtime(phi1) [::measure::format::valueWithErr -noScale -- $phi1 $phi1Err ""]
 	set runtime(phi2) [::measure::format::valueWithErr -noScale -- $phi2 $phi2Err ""]
 	set runtime(gamma) [::measure::format::valueWithErr -noScale -- $gamma $gammaErr ""]
-	set runtime(tau) [::measure::format::valueWithErr -noScale -mult 1.0e-6 -- $tau $tauErr ""]
+	set runtime(tau) [::measure::format::valueWithErr -noScale -- $tau $tauErr ""]
 	set runtime(temperature) [::measure::format::valueWithErr -noScale -- $temp $tempErr ""]
 
     measure::chart::${chartT_t}::addPoint $temp
 
-	set tau [expr 1.0e-6 * $tau]
 	if { $write } {
     	measure::chart::${chartTau_gamma}::addPoint $gamma $tau result
     	measure::chart::${chartGamma_T}::addPoint $temp $gamma result
@@ -402,10 +392,10 @@ proc toggleEvent { p i } {
 }
 
 proc toggleEvents { w } {
-	global MAX_EVENTS settings
+	global ssa::MAX_EVENTS settings
 
 	set p $w.nb.ms.b.alarm
-	for { set i 0 } { $i < $MAX_EVENTS } { incr i } {
+	for { set i 0 } { $i < $ssa::MAX_EVENTS } { incr i } {
 		set var "event.${i}.enabled"
 		if { ![info exists settings($var)] } {
 			set settings($var) 0
@@ -594,15 +584,15 @@ grid [ttk::label $p.lrelation -text "\u0423\u0441\u043B\u043E\u0432\u0438\u0435"
 grid [ttk::label $p.lvalue -text "\u0417\u043D\u0430\u0447\u0435\u043D\u0438\u0435"] -row 0 -column 3 -padx 5
 grid [ttk::label $p.lsound -text "\u0417\u0432\u0443\u043A\u043E\u0432\u043E\u0439 \u0441\u0438\u0433\u043D\u0430\u043B"] -row 0 -column 4 -padx 5
 
-for { set i 0 } { $i < $MAX_EVENTS } { incr i } {
+for { set i 0 } { $i < $ssa::MAX_EVENTS } { incr i } {
 	set row [lindex [grid size $p] 1]
 	set var "event.${i}"
 
 	grid [ttk::checkbutton $p.enabled_$i -variable settings(${var}.enabled) -command [list toggleEvent $p $i] ] -row $row -column 0 -sticky w -padx 5
-	grid [ttk::combobox $p.what_$i -width 20 -state readonly -values $EVENT_WHAT] -row $row -column 1 -sticky we -padx 5
-	grid [ttk::combobox $p.relation_$i -width 13 -state readonly -values $EVENT_RELATION] -row $row -column 2 -sticky we -padx 5
+	grid [ttk::combobox $p.what_$i -width 20 -state readonly -values $ssa::EVENT_WHAT] -row $row -column 1 -sticky we -padx 5
+	grid [ttk::combobox $p.relation_$i -width 13 -state readonly -values $ssa::EVENT_RELATION] -row $row -column 2 -sticky we -padx 5
 	grid [ttk::spinbox $p.value_$i -width 8 -textvariable settings(${var}.value) -from 0 -to 1000000 -increment 1 -validate key -validatecommand {string is double %P}] -row $row -column 3 -sticky we -padx 5
-	grid [ttk::combobox $p.sound_$i -width 13 -textvariable settings(${var}.sound) -state readonly -values $EVENT_SOUND] -row $row -column 4 -sticky we -padx 5
+	grid [ttk::combobox $p.sound_$i -width 13 -textvariable settings(${var}.sound) -state readonly -values $ssa::EVENT_SOUND] -row $row -column 4 -sticky we -padx 5
 	grid [ttk::button $p.test_$i -text "\u041F\u0440\u043E\u0438\u0433\u0440\u0430\u0442\u044C" -command [list playEventSound $var] -image ::img::start -compound left] -row $row -column 5 -sticky we -padx 5
 
 	bind $p.what_$i <<ComboboxSelected>> { eventComboboxSelected %W }

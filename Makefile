@@ -1,4 +1,4 @@
-APP_VERSION=1.0.2
+APP_VERSION=1.1.0
 LINUX_RUNTIME=./tclkit-8.5.8-linux-ix86
 WINDOWS_RUNTIME=tclkit-8.5.8-win32.upx.exe
 

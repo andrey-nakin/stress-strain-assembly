@@ -5,7 +5,7 @@
 # Main module
 ###############################################################################
 
-package provide app-stress-strain-assembly 1.0.2
+package provide app-stress-strain-assembly 1.1.0
 
 package require Tcl 8.5
 package require Tk 8.5
@@ -23,11 +23,25 @@ package require measure::interop
 package require measure::chart
 package require measure::datafile
 package require measure::format
+package require measure::listutils 0.2.0
 package require startfile
 package require measure::widget::fullscreen
 package require hardware::skbis::lir916
 
 package require ssa::utils
+
+###############################################################################
+# Constants & global variables
+###############################################################################
+
+set EVENT_WHAT { "\u03C61 (\u0433\u0440\u0430\u0434)" "\u03C62 (\u0433\u0440\u0430\u0434)" "\u0414\u0435\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u03B3 (%)" "\u041D\u0430\u043F\u0440\u044F\u0436\u0435\u043D\u0438\u0435 \u03C4 (\u041C\u041F\u0430)"  "\u0422\u0435\u043C\u043F\u0435\u0440\u0430\u0442\u0443\u0440\u0430 (\u041A)" }
+set EVENT_RELATION { "\u0411\u043E\u043B\u044C\u0448\u0435, \u0447\u0435\u043C" "\u041C\u0435\u043D\u044C\u0448\u0435, \u0447\u0435\u043C" }
+set EVENT_SOUND { Asterisk Exclamation Exit Hand Question Start }
+set MAX_EVENTS 10
+
+###############################################################################
+# Utility functions
+###############################################################################
 
 proc clearResults {} {
     global runtime chartTau_gamma chartT_t chartGamma_T chartTau_T
@@ -369,6 +383,64 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer gamma gammaErr tau
     }
 }
 
+proc toggleEvent { p i } {
+	global settings
+
+	if { $settings(event.${i}.enabled) } {	
+		set cbstate readonly
+		set state normal
+	} else {
+		set cbstate disabled
+		set state disabled
+	}
+
+	$p.what_$i configure -state $cbstate
+	$p.relation_$i configure -state $cbstate
+	$p.value_$i configure -state $state
+	$p.sound_$i configure -state $cbstate
+	$p.test_$i configure -state $state
+}
+
+proc toggleEvents { w } {
+	global MAX_EVENTS settings
+
+	set p $w.nb.ms.b.alarm
+	for { set i 0 } { $i < $MAX_EVENTS } { incr i } {
+		set var "event.${i}.enabled"
+		if { ![info exists settings($var)] } {
+			set settings($var) 0
+		}
+		toggleEvent $p $i
+
+		if { [info exists settings(event.${i}.what)] } {
+			$p.what_$i current $settings(event.${i}.what)
+		}
+		if { [info exists settings(event.${i}.relation)] } {
+			$p.relation_$i current $settings(event.${i}.relation)
+		}
+	}
+}
+
+proc playEventSound { var } {
+	global settings
+	package require twapi
+
+	if { ![info exists settings(${var}.sound)] || $settings(${var}.sound) == "" } {
+		tk_messageBox -icon error -title "\u041E\u0448\u0438\u0431\u043A\u0430" -message "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0437\u0432\u0443\u043A\u043E\u0432\u043E\u0439 \u0441\u0438\u0433\u043D\u0430\u043B"
+		return 
+	}
+	
+	set sound System
+	append sound $settings(${var}.sound)
+	twapi::play_sound $sound -alias
+}
+
+proc eventComboboxSelected { widget } {
+	global settings
+	regexp "\.(\[a-z\]+)_(\[0-9\]+)$" $widget _ var i
+	set settings(event.${i}.${var}) [$widget current]
+}
+
 ###############################################################################
 # Entry point
 ###############################################################################
@@ -389,7 +461,10 @@ ttk::notebook $w.nb
 pack $w.nb -fill both -expand 1 -padx 2 -pady 3
 ttk::notebook::enableTraversal $w.nb
 
+#################
 # Measurement tab
+#################
+
 ttk::frame $w.nb.m
 $w.nb add $w.nb.m -text " \u0418\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0435 "
 
@@ -460,7 +535,10 @@ grid rowconfigure $p { 0 1 } -weight 1
 
 place [ttk::button $p.cb -text "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C" -command clearResults] -anchor ne -relx 1.0 -rely 0.0
 
+############################
 # Measurement parameters tab
+############################
+
 ttk::frame $w.nb.ms
 $w.nb add $w.nb.ms -text " \u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F "
 
@@ -507,7 +585,40 @@ grid columnconfigure $p { 1 } -weight 1
 
 pack $p -fill x -padx 10 -pady 5
 
+# Event Alarm
+
+set p [ttk::labelframe $w.nb.ms.b.alarm -text " \u0421\u0438\u0433\u043D\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043E \u0441\u043E\u0431\u044B\u0442\u0438\u044F\u0445 " -pad 10]
+
+grid [ttk::label $p.lwhat -text "\u0412\u0435\u043B\u0438\u0447\u0438\u043D\u0430"] -row 0 -column 1 -padx 5
+grid [ttk::label $p.lrelation -text "\u0423\u0441\u043B\u043E\u0432\u0438\u0435"] -row 0 -column 2 -padx 5
+grid [ttk::label $p.lvalue -text "\u0417\u043D\u0430\u0447\u0435\u043D\u0438\u0435"] -row 0 -column 3 -padx 5
+grid [ttk::label $p.lsound -text "\u0417\u0432\u0443\u043A\u043E\u0432\u043E\u0439 \u0441\u0438\u0433\u043D\u0430\u043B"] -row 0 -column 4 -padx 5
+
+for { set i 0 } { $i < $MAX_EVENTS } { incr i } {
+	set row [lindex [grid size $p] 1]
+	set var "event.${i}"
+
+	grid [ttk::checkbutton $p.enabled_$i -variable settings(${var}.enabled) -command [list toggleEvent $p $i] ] -row $row -column 0 -sticky w -padx 5
+	grid [ttk::combobox $p.what_$i -width 20 -state readonly -values $EVENT_WHAT] -row $row -column 1 -sticky we -padx 5
+	grid [ttk::combobox $p.relation_$i -width 13 -state readonly -values $EVENT_RELATION] -row $row -column 2 -sticky we -padx 5
+	grid [ttk::spinbox $p.value_$i -width 8 -textvariable settings(${var}.value) -from 0 -to 1000000 -increment 1 -validate key -validatecommand {string is double %P}] -row $row -column 3 -sticky we -padx 5
+	grid [ttk::combobox $p.sound_$i -width 13 -textvariable settings(${var}.sound) -state readonly -values $EVENT_SOUND] -row $row -column 4 -sticky we -padx 5
+	grid [ttk::button $p.test_$i -text "\u041F\u0440\u043E\u0438\u0433\u0440\u0430\u0442\u044C" -command [list playEventSound $var] -image ::img::start -compound left] -row $row -column 5 -sticky we -padx 5
+
+	bind $p.what_$i <<ComboboxSelected>> { eventComboboxSelected %W }
+	bind $p.relation_$i <<ComboboxSelected>> { eventComboboxSelected %W }
+
+	grid rowconfigure $p [list $row] -pad 5
+}
+
+grid columnconfigure $p { 1 2 3 4 } -weight 1
+
+pack $p -fill x -padx 10 -pady 5
+
+####################
 # DUT parameters tab
+####################
+
 ttk::frame $w.nb.dut
 $w.nb add $w.nb.dut -text " \u041E\u0431\u0440\u0430\u0437\u0435\u0446 "
 
@@ -554,7 +665,9 @@ grid rowconfigure $p { 5 } -pad 10
 
 pack $p -fill x -padx 10 -pady 5
 
+#######################
 # Device parameters tab
+#######################
 
 ttk::frame $w.nb.tsetup
 $w.nb add $w.nb.tsetup -text " \u041F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432 "
@@ -674,6 +787,7 @@ pack [ttk::label $w.fr.lhint -text "F11: \u0432\u043A\u043B\u044E\u0447\u0438\u0
 measure::config::read
 
 toggleProgControls
+toggleEvents $w
 
 startTester
 

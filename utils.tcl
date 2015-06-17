@@ -33,7 +33,7 @@ set ssa::EVENT_RELATION { "\u0411\u043E\u043B\u044C\u0448\u0435, \u0447\u0435\u0
 set ssa::EVENT_RELATION_EXPR { ">=" "<=" }
 
 # list of event sounds
-set ssa::EVENT_SOUND { Asterisk Exclamation Exit Hand Question Start }
+set ssa::EVENT_SOUND { SystemAsterisk SystemExclamation SystemExit SystemHand SystemQuestion SystemStart }
 
 # max number of events
 set ssa::MAX_EVENTS 10
@@ -218,9 +218,9 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer { write 0 } } {
 	set tau [expr 1.0e-6 * $tau]
 	set tauErr [expr 1.0e-6 * $tauErr]
 
-#!!!	if { $ssa::isMeasurement } {
+	if { $ssa::isMeasurement } {
 		trackEvents $phi1 $phi2 $gamma $tau $temp
-#	}
+	}
 
 	if { [measure::interop::isAlone] } {
 	    # Выводим результаты в консоль
@@ -301,7 +301,7 @@ proc writeDataPoint { fn temp tempErr tempDer phi1 phi1Err phi2 phi2Err gamma ga
 }
 
 proc prepareEvents {} {
-	global settings ssa::MAX_EVENTS ssa::EVENT_VAR ssa::EVENT_RELATION_EXPR
+	global settings ssa::MAX_EVENTS ssa::EVENT_VAR ssa::EVENT_RELATION_EXPR ssa::EVENT_SOUND
 
 	set result ""
 
@@ -338,7 +338,14 @@ proc prepareEvents {} {
 			continue
 		}
 
-		append result "if {(\$$what $relation $value) && (!\[info exists prevValues($what)\] || !(\$prevValues($what) $relation $value))} {set sound \"$settings(${var}.sound)\"}\nset prevValues($what) \$$what\n"
+		set sound $settings(${var}.sound)
+		if { $sound < 0 || $sound >= [llength $ssa::EVENT_SOUND] } {
+			# <sound> is invalid
+			continue
+		}
+		set sound [lindex $ssa::EVENT_SOUND $sound]
+
+		append result "if {(\$$what $relation $value) && \[info exists prevValues($what)\] && !(\$prevValues($what) $relation $value)} {set sound \"$sound\"}\nset prevValues($what) \$$what\n"
 	}
 
 	return $result
@@ -346,7 +353,7 @@ proc prepareEvents {} {
 
 proc play_sound { sound } {
 	package require twapi
-	twapi::play_sound "System${sound}" -alias -async
+	twapi::play_sound $sound -alias -async
 }
 
 # track events depending on variable values
@@ -362,5 +369,18 @@ proc trackEvents { phi1 phi2 gamma tau temp } {
 	if { $sound != "" } {
 		catch { play_sound $sound }
 	}
+}
+
+proc ssa::sound-labels {} {
+	package require registry
+	global ssa::EVENT_SOUND log
+
+	set result {}
+	foreach s $ssa::EVENT_SOUND {
+		set label [registry get HKEY_CURRENT_USER\\AppEvents\\EventLabels\\$s {}]
+		lappend result $label
+	}
+
+	return $result
 }
 

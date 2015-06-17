@@ -92,13 +92,25 @@ proc checkPrerequisites {} {
 	if { ![info exists settings(dut.length)] || $settings(dut.length) == "" || ![info exists settings(dut.r)] || $settings(dut.r) == "" || ![info exists settings(dut.momentum)] || $settings(dut.momentum) == "" } {
 		error "\u041D\u0435 \u0432\u0432\u0435\u0434\u0435\u043D\u044B \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u043E\u0431\u0440\u0430\u0437\u0446\u0430"
 	}
+
+	if { [info exists settings(result.fileName)] && $settings(result.fileName) != "" } {
+		set fn [measure::datafile::parseFileName $settings(result.fileName)]
+		if { [file exists $fn] } {
+			set answer [tk_messageBox -icon warning -title "Подтверждение" -message "Файл «$fn» уже существует. Продолжить?" -type yesno]
+			if { $answer != yes } {
+				error {}
+			}
+		}
+	}
 }
 
 proc startMeasure {} {
 	global w log runtime chartTau_gamma workerId
 
 	if { [catch { checkPrerequisites } err] } {
-		tk_messageBox -icon error -title "\u041E\u0448\u0438\u0431\u043A\u0430" -message $err
+		if { $err != "" } {
+			tk_messageBox -icon error -title "\u041E\u0448\u0438\u0431\u043A\u0430" -message $err
+		}
 		return 
 	}
 
@@ -402,17 +414,20 @@ proc toggleEvents { w } {
 		}
 		toggleEvent $p $i
 
-		if { [info exists settings(event.${i}.what)] } {
+		if { [info exists settings(event.${i}.what)] && [string is integer $settings(event.${i}.what)] } {
 			$p.what_$i current $settings(event.${i}.what)
 		}
-		if { [info exists settings(event.${i}.relation)] } {
+		if { [info exists settings(event.${i}.relation)] && [string is integer $settings(event.${i}.relation)] } {
 			$p.relation_$i current $settings(event.${i}.relation)
+		}
+		if { [info exists settings(event.${i}.sound)] && [string is integer $settings(event.${i}.sound)] } {
+			$p.sound_$i current $settings(event.${i}.sound)
 		}
 	}
 }
 
 proc playEventSound { var } {
-	global settings
+	global settings ssa::EVENT_SOUND
 	package require twapi
 
 	if { ![info exists settings(${var}.sound)] || $settings(${var}.sound) == "" } {
@@ -420,9 +435,7 @@ proc playEventSound { var } {
 		return 
 	}
 	
-	set sound System
-	append sound $settings(${var}.sound)
-	twapi::play_sound $sound -alias
+	twapi::play_sound [lindex $ssa::EVENT_SOUND $settings(${var}.sound)] -alias
 }
 
 proc eventComboboxSelected { widget } {
@@ -577,7 +590,10 @@ pack $p -fill x -padx 10 -pady 5
 
 # Event Alarm
 
-set p [ttk::labelframe $w.nb.ms.b.alarm -text " \u0421\u0438\u0433\u043D\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043E \u0441\u043E\u0431\u044B\u0442\u0438\u044F\u0445 " -pad 10]
+set p [ttk::labelframe $w.nb.ms.b.alarm -text " \u041E\u043F\u043E\u0432\u0435\u0449\u0435\u043D\u0438\u0435 \u043E \u0441\u043E\u0431\u044B\u0442\u0438\u044F\u0445 " -pad 10]
+if { [catch { set sound_labels [ssa::sound-labels] }] } {
+	set sound_labels $ssa::EVENT_SOUND
+}
 
 grid [ttk::label $p.lwhat -text "\u0412\u0435\u043B\u0438\u0447\u0438\u043D\u0430"] -row 0 -column 1 -padx 5
 grid [ttk::label $p.lrelation -text "\u0423\u0441\u043B\u043E\u0432\u0438\u0435"] -row 0 -column 2 -padx 5
@@ -591,12 +607,13 @@ for { set i 0 } { $i < $ssa::MAX_EVENTS } { incr i } {
 	grid [ttk::checkbutton $p.enabled_$i -variable settings(${var}.enabled) -command [list toggleEvent $p $i] ] -row $row -column 0 -sticky w -padx 5
 	grid [ttk::combobox $p.what_$i -width 20 -state readonly -values $ssa::EVENT_WHAT] -row $row -column 1 -sticky we -padx 5
 	grid [ttk::combobox $p.relation_$i -width 13 -state readonly -values $ssa::EVENT_RELATION] -row $row -column 2 -sticky we -padx 5
-	grid [ttk::spinbox $p.value_$i -width 8 -textvariable settings(${var}.value) -from 0 -to 1000000 -increment 1 -validate key -validatecommand {string is double %P}] -row $row -column 3 -sticky we -padx 5
-	grid [ttk::combobox $p.sound_$i -width 13 -textvariable settings(${var}.sound) -state readonly -values $ssa::EVENT_SOUND] -row $row -column 4 -sticky we -padx 5
+	grid [ttk::spinbox $p.value_$i -width 6 -textvariable settings(${var}.value) -from 0 -to 1000000 -increment 1 -validate key -validatecommand {string is double %P}] -row $row -column 3 -sticky we -padx 5
+	grid [ttk::combobox $p.sound_$i -width 20 -state readonly -values $sound_labels] -row $row -column 4 -sticky we -padx 5
 	grid [ttk::button $p.test_$i -text "\u041F\u0440\u043E\u0438\u0433\u0440\u0430\u0442\u044C" -command [list playEventSound $var] -image ::img::start -compound left] -row $row -column 5 -sticky we -padx 5
 
 	bind $p.what_$i <<ComboboxSelected>> { eventComboboxSelected %W }
 	bind $p.relation_$i <<ComboboxSelected>> { eventComboboxSelected %W }
+	bind $p.sound_$i <<ComboboxSelected>> { eventComboboxSelected %W }
 
 	grid rowconfigure $p [list $row] -pad 5
 }

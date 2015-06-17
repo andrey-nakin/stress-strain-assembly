@@ -591,7 +591,7 @@ pack $p -fill x -padx 10 -pady 5
 # Event Alarm
 
 set p [ttk::labelframe $w.nb.ms.b.alarm -text " \u041E\u043F\u043E\u0432\u0435\u0449\u0435\u043D\u0438\u0435 \u043E \u0441\u043E\u0431\u044B\u0442\u0438\u044F\u0445 " -pad 10]
-if { [catch { set sound_labels [ssa::sound-labels] }] } {
+if { [catch { set sound_labels [ssa::sound-labels] } err] } {
 	set sound_labels $ssa::EVENT_SOUND
 }
 

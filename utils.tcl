@@ -33,7 +33,7 @@ set ssa::EVENT_RELATION { "\u0411\u043E\u043B\u044C\u0448\u0435, \u0447\u0435\u0
 set ssa::EVENT_RELATION_EXPR { ">=" "<=" }
 
 # list of event sounds
-set ssa::EVENT_SOUND { SystemAsterisk SystemExclamation SystemExit SystemHand SystemQuestion SystemStart }
+set ssa::EVENT_SOUND { SystemAsterisk SystemExclamation SystemExit SystemHand SystemNotification SystemQuestion }
 
 # max number of events
 set ssa::MAX_EVENTS 10
@@ -373,11 +373,18 @@ proc trackEvents { phi1 phi2 gamma tau temp } {
 
 proc ssa::sound-labels {} {
 	package require registry
+#	package require twapi_base 4.1
+#	package require twapi_resource 4.1
+#	package require twapi_nls 4.1
 	global ssa::EVENT_SOUND log
+
+#	set langid [twapi::get_system_default_langid]
 
 	set result {}
 	foreach s $ssa::EVENT_SOUND {
-		set label [registry get HKEY_CURRENT_USER\\AppEvents\\EventLabels\\$s {}]
+		set key "HKEY_CURRENT_USER\\AppEvents\\EventLabels\\$s"
+#		set resourceName [registry get $key DispFileName]
+		set label [registry get $key {}]
 		lappend result $label
 	}
 

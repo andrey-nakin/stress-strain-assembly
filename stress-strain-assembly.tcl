@@ -96,7 +96,7 @@ proc checkPrerequisites {} {
 	if { [info exists settings(result.fileName)] && $settings(result.fileName) != "" } {
 		set fn [measure::datafile::parseFileName $settings(result.fileName)]
 		if { [file exists $fn] } {
-			set answer [tk_messageBox -icon warning -title "Подтверждение" -message "Файл «$fn» уже существует. Продолжить?" -type yesno]
+			set answer [tk_messageBox -icon warning -title "\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435" -message "\u0424\u0430\u0439\u043B \u00AB$fn\u00BB \u0443\u0436\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442. \u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C?" -type yesno]
 			if { $answer != yes } {
 				error {}
 			}

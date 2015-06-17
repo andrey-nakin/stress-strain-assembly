@@ -45,7 +45,7 @@ set ssa::isMeasurement 0
 # Package-private constants & variables
 ###############################################################################
 
-# Число измерений, по которым определяется производная dT/dt
+# \u0427\u0438\u0441\u043B\u043E \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u0439, \u043F\u043E \u043A\u043E\u0442\u043E\u0440\u044B\u043C \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u044F\u0435\u0442\u0441\u044F \u043F\u0440\u043E\u0438\u0437\u0432\u043E\u0434\u043D\u0430\u044F dT/dt
 set DERIVATIVE_READINGS 10
 
 # Prev variable values
@@ -55,7 +55,7 @@ array set prevValues {}
 # Utility procedures
 ###############################################################################
 
-# Процедура проверяет правильность настроек, при необходимости вносит поправки
+# \u041F\u0440\u043E\u0446\u0435\u0434\u0443\u0440\u0430 \u043F\u0440\u043E\u0432\u0435\u0440\u044F\u0435\u0442 \u043F\u0440\u0430\u0432\u0438\u043B\u044C\u043D\u043E\u0441\u0442\u044C \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A, \u043F\u0440\u0438 \u043D\u0435\u043E\u0431\u0445\u043E\u0434\u0438\u043C\u043E\u0441\u0442\u0438 \u0432\u043D\u043E\u0441\u0438\u0442 \u043F\u043E\u043F\u0440\u0430\u0432\u043A\u0438
 proc validateSettings {} {
     measure::config::validate {
         result.fileName ""
@@ -152,15 +152,15 @@ proc initLir { key } {
 	]
 }
 
-# Инициализация приборов
+# \u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043F\u0440\u0438\u0431\u043E\u0440\u043E\u0432
 proc setup {} {
     global lir1 lir2 trm
 
-	# ЛИР-16
+	# \u041B\u0418\u0420-16
     set lir1 [initLir lir1]
     set lir2 [initLir lir2]
 
-    # Настраиваем ТРМ-201 для измерения температуры
+    # \u041D\u0430\u0441\u0442\u0440\u0430\u0438\u0432\u0430\u0435\u043C \u0422\u0420\u041C-201 \u0434\u043B\u044F \u0438\u0437\u043C\u0435\u0440\u0435\u043D\u0438\u044F \u0442\u0435\u043C\u043F\u0435\u0440\u0430\u0442\u0443\u0440\u044B
     set trm [::hardware::owen::trm201::modbus::init \
 		-com [measure::config::get -required rs485.serialPort] \
 		-addr [measure::config::get -required trm1.addr] \
@@ -168,24 +168,24 @@ proc setup {} {
 	]
 }
 
-# Завершаем работу установки, матчасть в исходное.
+# \u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u043C \u0440\u0430\u0431\u043E\u0442\u0443 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438, \u043C\u0430\u0442\u0447\u0430\u0441\u0442\u044C \u0432 \u0438\u0441\u0445\u043E\u0434\u043D\u043E\u0435.
 proc finish {} {
     global lir1 lir2 trm log
 
     if { [info exists lir1] } {
-        # Переводим ЛИР-916 № 1 в исходное состояние
+        # \u041F\u0435\u0440\u0435\u0432\u043E\u0434\u0438\u043C \u041B\u0418\u0420-916 \u2116 1 \u0432 \u0438\u0441\u0445\u043E\u0434\u043D\u043E\u0435 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435
     	::hardware::skbis::lir916::done $lir1
 		unset lir1
 	}
 
     if { [info exists lir2] } {
-        # Переводим ЛИР-916 № 2 в исходное состояние
+        # \u041F\u0435\u0440\u0435\u0432\u043E\u0434\u0438\u043C \u041B\u0418\u0420-916 \u2116 2 \u0432 \u0438\u0441\u0445\u043E\u0434\u043D\u043E\u0435 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435
     	::hardware::skbis::lir916::done $lir2
 		unset lir2
 	}
 
     if { [info exists trm] } {
-        # Переводим ТРМ-201 в исходное состояние
+        # \u041F\u0435\u0440\u0435\u0432\u043E\u0434\u0438\u043C \u0422\u0420\u041C-201 \u0432 \u0438\u0441\u0445\u043E\u0434\u043D\u043E\u0435 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435
         ::hardware::owen::trm201::modbus::done $trm
         unset trm
     }
@@ -223,15 +223,15 @@ proc display { phi1 phi1Err phi2 phi2Err temp tempErr tempDer { write 0 } } {
 	}
 
 	if { [measure::interop::isAlone] } {
-	    # Выводим результаты в консоль
-		set phi1v [::measure::format::valueWithErr -noScale -- $phi1 $phi1Err "°"]
-		set phi2v [::measure::format::valueWithErr -noScale -- $phi2 $phi2Err "°"]
+	    # \u0412\u044B\u0432\u043E\u0434\u0438\u043C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0432 \u043A\u043E\u043D\u0441\u043E\u043B\u044C
+		set phi1v [::measure::format::valueWithErr -noScale -- $phi1 $phi1Err "\u00B0"]
+		set phi2v [::measure::format::valueWithErr -noScale -- $phi2 $phi2Err "\u00B0"]
 		set gammav [::measure::format::valueWithErr -noScale -- $gamma $gammaErr "%%"]
-		set tauv [::measure::format::valueWithErr -noScale -- $tau $tauErr "МПа"]
+		set tauv [::measure::format::valueWithErr -noScale -- $tau $tauErr "\u041C\u041F\u0430"]
     	set tv [::measure::format::valueWithErr $temp $tempErr K]
-    	puts "φ1=$phi1v\tφ2=$phi2v\tγ=$gammav\tτ=$tauv\tT=$tv"
+    	puts "\u03C61=$phi1v\t\u03C62=$phi2v\t\u03B3=$gammav\t\u03C4=$tauv\tT=$tv"
 	} else {
-	    # Выводим результаты в окно программы
+	    # \u0412\u044B\u0432\u043E\u0434\u0438\u043C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u0432 \u043E\u043A\u043D\u043E \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u044B
       	measure::interop::cmd [list display $phi1 $phi1Err $phi2 $phi2Err $temp $tempErr $tempDer $gamma $gammaErr $tau $tauErr $write]
 	}
 }
@@ -240,7 +240,7 @@ set tempValues [list]
 set timeValues [list]
 set startTime [clock milliseconds]
 
-# Измеряем температуру и возвращаем вместе с инструментальной погрешностью и производной
+# \u0418\u0437\u043C\u0435\u0440\u044F\u0435\u043C \u0442\u0435\u043C\u043F\u0435\u0440\u0430\u0442\u0443\u0440\u0443 \u0438 \u0432\u043E\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u043C \u0432\u043C\u0435\u0441\u0442\u0435 \u0441 \u0438\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043F\u043E\u0433\u0440\u0435\u0448\u043D\u043E\u0441\u0442\u044C\u044E \u0438 \u043F\u0440\u043E\u0438\u0437\u0432\u043E\u0434\u043D\u043E\u0439
 proc readTemp {} {
     global tempValues timeValues startTime DERIVATIVE_READINGS settings
     
@@ -250,7 +250,7 @@ proc readTemp {} {
 		set t [measure::expr::eval $settings(tc.correction) $t]
 	}
 
-    # накапливаем значения в очереди для вычисления производной 
+    # \u043D\u0430\u043A\u0430\u043F\u043B\u0438\u0432\u0430\u0435\u043C \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u044F \u0432 \u043E\u0447\u0435\u0440\u0435\u0434\u0438 \u0434\u043B\u044F \u0432\u044B\u0447\u0438\u0441\u043B\u0435\u043D\u0438\u044F \u043F\u0440\u043E\u0438\u0437\u0432\u043E\u0434\u043D\u043E\u0439 
     measure::listutils::lappend tempValues $t $DERIVATIVE_READINGS
     measure::listutils::lappend timeValues [expr [clock milliseconds] - $startTime] $DERIVATIVE_READINGS
     if { [llength $tempValues] < $DERIVATIVE_READINGS } {
@@ -262,8 +262,8 @@ proc readTemp {} {
     return [list $t $tErr $der]
 }
 
-# Снимаем показания вольтметра на термопаре и возвращаем температуру 
-# вместе с инструментальной погрешностью
+# \u0421\u043D\u0438\u043C\u0430\u0435\u043C \u043F\u043E\u043A\u0430\u0437\u0430\u043D\u0438\u044F \u0432\u043E\u043B\u044C\u0442\u043C\u0435\u0442\u0440\u0430 \u043D\u0430 \u0442\u0435\u0440\u043C\u043E\u043F\u0430\u0440\u0435 \u0438 \u0432\u043E\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u043C \u0442\u0435\u043C\u043F\u0435\u0440\u0430\u0442\u0443\u0440\u0443 
+# \u0432\u043C\u0435\u0441\u0442\u0435 \u0441 \u0438\u043D\u0441\u0442\u0440\u0443\u043C\u0435\u043D\u0442\u0430\u043B\u044C\u043D\u043E\u0439 \u043F\u043E\u0433\u0440\u0435\u0448\u043D\u043E\u0441\u0442\u044C\u044E
 proc readTempTrm {} {
 #!!!
 	return [list [expr 0.1 * ([clock seconds] % 10000)] 0.1]
@@ -281,7 +281,7 @@ proc readAngles {} {
 	return [list $phi1 $phi1Err $phi2 $phi2Err]
 }
 
-# записывает точку в файл данных с попутным вычислением удельного сопротивления
+# \u0437\u0430\u043F\u0438\u0441\u044B\u0432\u0430\u0435\u0442 \u0442\u043E\u0447\u043A\u0443 \u0432 \u0444\u0430\u0439\u043B \u0434\u0430\u043D\u043D\u044B\u0445 \u0441 \u043F\u043E\u043F\u0443\u0442\u043D\u044B\u043C \u0432\u044B\u0447\u0438\u0441\u043B\u0435\u043D\u0438\u0435\u043C \u0443\u0434\u0435\u043B\u044C\u043D\u043E\u0433\u043E \u0441\u043E\u043F\u0440\u043E\u0442\u0438\u0432\u043B\u0435\u043D\u0438\u044F
 proc writeDataPoint { fn temp tempErr tempDer phi1 phi1Err phi2 phi2Err gamma gammaErr tau tauErr manual } {
 	if { $manual } {
 	   set manual true

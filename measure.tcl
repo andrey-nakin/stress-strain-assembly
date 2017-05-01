@@ -5,7 +5,7 @@
 # Measurement module
 ###############################################################################
 
-package provide ssa::measure 1.1.0
+package provide ssa::measure 1.1.1
 
 package require math::statistics
 package require measure::logger
@@ -16,7 +16,7 @@ package require measure::ranges
 package require measure::measure
 package require measure::listutils
 
-package require ssa::utils 1.1.0
+package require ssa::utils 1.1.1
 
 proc runTimeStep {} {
     global doMeasurement

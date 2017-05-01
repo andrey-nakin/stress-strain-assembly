@@ -5,7 +5,7 @@
 # Common utils
 ###############################################################################
 
-package provide ssa::utils 1.1.0
+package provide ssa::utils 1.1.1
 namespace eval ssa { }
 
 package require measure::listutils

@@ -5,7 +5,7 @@
 # Tester module
 ###############################################################################
 
-package provide ssa::tester 1.1.0
+package provide ssa::tester 1.1.1
 
 package require measure::logger
 package require measure::config

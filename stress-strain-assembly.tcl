@@ -5,7 +5,7 @@
 # Main module
 ###############################################################################
 
-package provide app-stress-strain-assembly 1.1.0
+package provide app-stress-strain-assembly 1.1.1
 
 package require Tcl 8.5
 package require Tk 8.5
@@ -28,7 +28,7 @@ package require startfile
 package require measure::widget::fullscreen
 package require hardware::skbis::lir916
 
-package require ssa::utils 1.1.0
+package require ssa::utils 1.1.1
 
 ###############################################################################
 # Utility functions
